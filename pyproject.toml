@@ -1,0 +1,16 @@
+[tool.pdm]
+
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Nicolas Rouquette", email = "nfr@jpl.nasa.gov"},
+]
+dependencies = [
+    "p-tqdm>=1.4.0",
+    "joblib>=1.2.0",
+    "Pacti @ git+https://github.com/FormalSystems/pacti.git@a6e1aab",
+]
+requires-python = ">=3.9.16, <=3.11.1"
+license = {text = "BSD-3-Clause"}

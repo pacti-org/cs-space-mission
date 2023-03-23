@@ -1,10 +1,12 @@
 
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import ipywidgets as widgets
 import numpy as np
 from typing import Tuple
 
-def plot_steps(step_bounds : list[Tuple[float, float]], step_names : list[str], ylabel: str, title: str, text: str) -> Figure:
+def plot_steps(step_bounds : List[Tuple[float, float]], step_names : List[str], ylabel: str, title: str, text: str) -> Figure:
+    
     vertices = []
     N = len(step_bounds)
     assert N == len(step_names)
@@ -13,6 +15,7 @@ def plot_steps(step_bounds : list[Tuple[float, float]], step_names : list[str], 
     for i in range(N):
         vertices.append((N - i, step_bounds[N-1-i][1]))
     x,y = zip(*vertices)
+    
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 2, 1, aspect="auto")
     x_lims = ax1.get_xlim()
@@ -39,15 +42,11 @@ def plot_steps(step_bounds : list[Tuple[float, float]], step_names : list[str], 
     p.set_clip_on(False)
     ax2.add_patch(p)
 
-    ax2.text(0.5 * (left + right), 0.5 * (bottom + top), text,
-        horizontalalignment='center',
+    ax2.text(x=0, y=0.5 * (bottom + top), s=text,
+        horizontalalignment='left',
         verticalalignment='center',
-        transform=ax2.transAxes)
+        transform=ax2.transAxes,
+        fontdict={'family': 'monospace', 'size': 8})
     ax2.set_axis_off()
 
     return fig
-
-
-if __name__ == "__main__":
-    plot_steps([(1,2),(3,4),(0.3,0.7), (0.7, 0.9)], ["Step1", "Step2", "Step3", "Step4"])
-    plt.show()

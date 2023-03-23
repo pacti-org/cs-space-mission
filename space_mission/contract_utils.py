@@ -2,15 +2,44 @@
 from pacti.terms.polyhedra import PolyhedralContract
 
 from pacti import write_contracts_to_file, read_contracts_from_file
-from typing import Optional
+from typing import Optional, List, Tuple, Union
+from functools import reduce
+import numpy as np
+import itertools
 import json
-import uuid
 import pathlib
 
-here=pathlib.Path(__file__).parent.resolve()
 
+tuple2float = Tuple[float, float]
+
+here = pathlib.Path(__file__).parent.resolve()
 
 epsilon = 0
+
+class Schedule:
+    def __init__(self, scenario: List[tuple2float], reqs: np.ndarray, contract: PolyhedralContract):
+        self.scenario = scenario
+        self.reqs = reqs
+        self.contract = contract
+
+
+numeric = Union[int, float]
+
+tuple2 = Tuple[Optional[numeric], Optional[numeric]]
+
+tuple2float = Tuple[float, float]
+
+def check_tuple(t: tuple2) -> tuple2float:
+    if t[0] is None:
+        a = -1.0
+    else:
+        a = t[0]
+    if t[1] is None:
+        b = -1.0
+    else:
+        b = t[1]
+    return (a, b)
+
 
 def nochange_contract(s: int, name: str) -> PolyhedralContract:
     """
@@ -34,15 +63,16 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
             f"| {name}{s}_exit - {name}{s}_entry | <= 0",
             # f"{name}{s}_exit <= 100",
         ],
-
     )
 
 
 def scenario_sequence(
-
-    c1: PolyhedralContract, c2: PolyhedralContract, variables: list[str], c1index: int, c2index: Optional[int] = None,
+    c1: PolyhedralContract,
+    c2: PolyhedralContract,
+    variables: list[str],
+    c1index: int,
+    c2index: Optional[int] = None,
     file_name: Optional[str] = None,
-
 ) -> PolyhedralContract:
     """
     Composes c1 with a c2 modified to rename its entry variables according to c1's exit variables
@@ -87,20 +117,65 @@ def scenario_sequence(
 
     if file_name:
         write_contracts_to_file(
-            contracts=[c1, c2_with_inputs_renamed, c12_with_outputs_kept], 
+            contracts=[c1, c2_with_inputs_renamed, c12_with_outputs_kept],
             names=["c1", "c2_with_inputs_renamed", "c12_with_outputs_kept"],
             file_name=file_name)
 
     return c12
 
 
-# For converting large images to base64, use: https://www.base64encoder.io/image-to-base64-converter/
-# The strings below correspond to "Base64 Encoded String"
+named_contract_t = Tuple[str, PolyhedralContract]
 
-# The format for the inline figures as follows:
-#
-# variable = ""  # noqa: E501
+named_contracts_t = List[named_contract_t]
 
+contract_names_t = List[str]
+
+failed_merges_t = Tuple[contract_names_t, str, PolyhedralContract]
+
+merge_result_t = Union[List[failed_merges_t], PolyhedralContract]
+
+merge_results_t = Tuple[List[failed_merges_t], List[PolyhedralContract]]
+
+schedule_result_t = Union[List[failed_merges_t], Schedule]
+schedule_results_t = Tuple[List[failed_merges_t], List[Schedule]]
+
+
+def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
+    names: contract_names_t = []
+    current: PolyhedralContract = c
+    for cn, cc in c_seq:
+        try:
+            current = current.merge(cc)
+            names.append(cn)
+        except ValueError:
+            return [(names, cn, cc)]
+    return current
+
+# maximum number of failures.
+max_failures = 1
+
+def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> merge_result_t:
+    # n! is the number of possible permutations of a list of n elements
+    # 6! =     720
+    # 7! =   5,040
+    # 8! =  40,320
+    # 9! = 362,880
+    # Beyond 7, it becomes too expensive to try all permutations.
+    assert len(candidates) <= 7
+    failures: List[failed_merges_t] = []
+    for c_seq in itertools.permutations(candidates):
+        cl = list(c_seq)
+        r = try_merge_sequence(c, cl)
+        if isinstance(r, PolyhedralContract):
+            return r
+        elif isinstance(r, list):
+            failures = failures + List[failed_merges_t](r)
+            if len(failures) >= max_failures:
+                return failures
+        else:
+            raise ValueError(f"{type(r)} should be a merge_result_t")
+
+    return failures
 
 with open(f"{here}/images.json") as f:
     file_data = json.load(f)

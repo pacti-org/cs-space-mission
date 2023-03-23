@@ -7,41 +7,29 @@ Github's ipynb rendering will show only an icon, not the SVG image.
 For SVG to PDF conversion, use this free service:
 https://cloudconvert.com/svg-to-pdf
 
-# Syncing case study notebooks to python files for testing.
+5,20 step analysis runs with up to 3 failures:
 
-There are several options:
-- nbconvert: https://github.com/FormalSystems/pacti/discussions/222
-- jupytext: https://jupytext.readthedocs.io/en/latest/using-cli.html
-
-The Jupytext doc explains how to use this as a pre-commit hook: https://jupytext.readthedocs.io/en/latest/using-pre-commit.html
-
-With jupytext, the config doc suggests we can add configuration either to `pyproject.toml` or a file `jupytext.toml`
-
-I tried adding the following to either file:
-
-```
-[tool.jupytext]
-formats = "case_studies///ipynb,tests/case_studies///py:percent"
+```shell
+(pacti-3.9) nfr@nfr-desktop:/opt/local/github.formalsystems/pacti$ /opt/local/github.formalsystems/pacti/.venv/bin/python /opt/local/github.formalsystems/pacti/case_studies/space_mission/hyper_requirements.py
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [00:52<00:00, 114.81it/s]
+Found 162 admissible and 17514 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
+Total time 52.663562059402466 seconds.
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [02:55<00:00, 34.18it/s]
+Found 106 admissible and 17682 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
+Total time 176.06474328041077 seconds.
 ```
 
-In the end, I had to specify the configuration at the command line for each conversion:
+5,20 step analysis runs with up to 1 failure:
 
+```shell
+(pacti-3.9) nfr@nfr-desktop:/opt/local/github.formalsystems/pacti$ /opt/local/github.formalsystems/pacti/.venv/bin/python /opt/local/github.formalsystems/pacti/case_studies/space_mission/hyper_requirements.py
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [00:42<00:00, 140.31it/s]
+Found 128 admissible and 5872 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
+Total time 42.92044806480408 seconds.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [01:58<00:00, 50.80it/s]
+Found 73 admissible and 5927 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
+Total time 118.37994575500488 seconds.
 ```
-nfr@nfr-desktop:/opt/local/github.formalsystems/pacti$ pdm run jupytext --set-formats case_studies///ipynb,tests/case_studies///py:percent case_studies/space_mission/space_mission_power.ipynb
-[jupytext] Reading case_studies/space_mission/space_mission_power.ipynb in format ipynb
-[jupytext] Updating notebook metadata with '{"jupytext": {"formats": "case_studies///ipynb,tests/case_studies///py:percent"}}'
-[jupytext] Updating case_studies/space_mission/space_mission_power.ipynb
-[jupytext] Updating tests/case_studies/space_mission/space_mission_power.py
-WARNING:root:[jupytext] creating missing directory tests/case_studies/space_mission/
-nfr@nfr-desktop:/opt/local/github.formalsystems/pacti$
-```
 
-This is missing the ability to filter cells that we do not want to export to python, similar to this functionality:
-https://nbconvert.readthedocs.io/en/latest/removing_cells.html
+Since the result files can exceed the 100Mb limit of github's lfs, they are excluded from git.
 
-The strategy would be:
-
-1) Run nbconvert to remove cells by converting the notebook to another notebook
-2) On the resulting notebook, run jupytext to convert to python
-
-It is awkward but it should work.
