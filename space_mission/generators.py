@@ -1,19 +1,10 @@
-import time
-from joblib import Parallel, delayed
 from base64 import b64decode
 from pacti import write_contracts_to_file
 from pacti.terms.polyhedra import *
-from pacti.iocontract import IoContract, Var
-from PIL import Image
-import matplotlib.pyplot as plt
-import os
 import numpy as np
-from matplotlib import patches
-import pdb
-from matplotlib.collections import PatchCollection
 from contract_utils import *
 
-from typing import Tuple, Union
+from typing import Union
 
 numeric = Union[int, float]
 
