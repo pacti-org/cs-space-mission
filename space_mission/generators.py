@@ -8,6 +8,8 @@ from typing import Union
 
 numeric = Union[int, float]
 
+compose_right_to_left = True
+
 nb_contracts = 0
 nb_merge = 0
 nb_compose = 0
@@ -127,10 +129,16 @@ def generate_power_scenario(
     s4 = power_consumer(s=s + 3, task="tcm_h", consumption=tcmh_cons)
     s5 = power_consumer(s=s + 4, task="tcm_dv", consumption=tcmdv_cons)
 
-    steps2 = scenario_sequence(c1=s1, c2=s2, variables=power_variables, c1index=s)
-    steps3 = scenario_sequence(c1=steps2, c2=s3, variables=power_variables, c1index=s + 1)
-    steps4 = scenario_sequence(c1=steps3, c2=s4, variables=power_variables, c1index=s + 2)
-    steps5 = scenario_sequence(c1=steps4, c2=s5, variables=power_variables, c1index=s + 3)
+    if compose_right_to_left:
+        steps2 = scenario_sequence(c1=s4, c2=s5, variables=power_variables, c1index=s + 3)
+        steps3 = scenario_sequence(c1=s3, c2=steps2, variables=power_variables, c1index=s + 2)
+        steps4 = scenario_sequence(c1=s2, c2=steps3, variables=power_variables, c1index=s + 1)
+        steps5 = scenario_sequence(c1=s1, c2=steps4, variables=power_variables, c1index=s)
+    else:
+        steps2 = scenario_sequence(c1=s1, c2=s2, variables=power_variables, c1index=s)
+        steps3 = scenario_sequence(c1=steps2, c2=s3, variables=power_variables, c1index=s + 1)
+        steps4 = scenario_sequence(c1=steps3, c2=s4, variables=power_variables, c1index=s + 2)
+        steps5 = scenario_sequence(c1=steps4, c2=s5, variables=power_variables, c1index=s + 3)
 
     if rename_outputs:
         return steps5.rename_variables([(f"soc{s+4}_exit", f"output_soc{s+4}")])
@@ -255,10 +263,16 @@ def generate_science_scenario(
     s4 = nochange_contract(s=s + 3, name="d").merge(nochange_contract(s=s + 3, name="c"))
     s5 = nochange_contract(s=s + 4, name="d").merge(nochange_contract(s=s + 4, name="c"))
 
-    steps2 = scenario_sequence(c1=s1, c2=s2, variables=science_variables, c1index=s)
-    steps3 = scenario_sequence(c1=steps2, c2=s3, variables=science_variables, c1index=s + 1)
-    steps4 = scenario_sequence(c1=steps3, c2=s4, variables=science_variables, c1index=s + 2)
-    steps5 = scenario_sequence(c1=steps4, c2=s5, variables=science_variables, c1index=s + 3)
+    if compose_right_to_left:
+        steps2 = scenario_sequence(c1=s4, c2=s5, variables=science_variables, c1index=s + 3)
+        steps3 = scenario_sequence(c1=s3, c2=steps2, variables=science_variables, c1index=s + 2)
+        steps4 = scenario_sequence(c1=s2, c2=steps3, variables=science_variables, c1index=s + 1)
+        steps5 = scenario_sequence(c1=s1, c2=steps4, variables=science_variables, c1index=s)
+    else:
+        steps2 = scenario_sequence(c1=s1, c2=s2, variables=science_variables, c1index=s)
+        steps3 = scenario_sequence(c1=steps2, c2=s3, variables=science_variables, c1index=s + 1)
+        steps4 = scenario_sequence(c1=steps3, c2=s4, variables=science_variables, c1index=s + 2)
+        steps5 = scenario_sequence(c1=steps4, c2=s5, variables=science_variables, c1index=s + 3)
 
     if rename_outputs:
         return steps5.rename_variables(
@@ -435,10 +449,16 @@ def generate_navigation_scenario(
         TCM_navigation_deltav_progress(s=s + 4, progress=tcm_dv_progress)
     )
 
-    steps2 = scenario_sequence(c1=s1, c2=s2, variables=navigation_variables, c1index=s)
-    steps3 = scenario_sequence(c1=steps2, c2=s3, variables=navigation_variables, c1index=s + 1)
-    steps4 = scenario_sequence(c1=steps3, c2=s4, variables=navigation_variables, c1index=s + 2)
-    steps5 = scenario_sequence(c1=steps4, c2=s5, variables=navigation_variables, c1index=s + 3)
+    if compose_right_to_left:
+        steps2 = scenario_sequence(c1=s4, c2=s5, variables=navigation_variables, c1index=s + 3)
+        steps3 = scenario_sequence(c1=s3, c2=steps2, variables=navigation_variables, c1index=s + 2)
+        steps4 = scenario_sequence(c1=s2, c2=steps3, variables=navigation_variables, c1index=s + 1)
+        steps5 = scenario_sequence(c1=s1, c2=steps4, variables=navigation_variables, c1index=s)
+    else:
+        steps2 = scenario_sequence(c1=s1, c2=s2, variables=navigation_variables, c1index=s)
+        steps3 = scenario_sequence(c1=steps2, c2=s3, variables=navigation_variables, c1index=s + 1)
+        steps4 = scenario_sequence(c1=steps3, c2=s4, variables=navigation_variables, c1index=s + 2)
+        steps5 = scenario_sequence(c1=steps4, c2=s5, variables=navigation_variables, c1index=s + 3)
 
     if rename_outputs:
         return steps5.rename_variables(
@@ -503,9 +523,14 @@ def long_scenario(means: np.ndarray, devs: np.ndarray) -> tuple[list[tuple2float
     _, l3 = make_scenario(s=11, means=means, devs=devs, rename_outputs=False)
     _, l4 = make_scenario(s=16, means=means, devs=devs, rename_outputs=True)
 
-    l12 = scenario_sequence(c1=l1, c2=l2, variables=all_variables, c1index=5)
-    l123 = scenario_sequence(c1=l12, c2=l3, variables=all_variables, c1index=10)
-    l1234 = scenario_sequence(c1=l123, c2=l4, variables=all_variables, c1index=15)
+    if compose_right_to_left:
+        l34 = scenario_sequence(c1=l3, c2=l4, variables=all_variables, c1index=15)
+        l234 = scenario_sequence(c1=l2, c2=l34, variables=all_variables, c1index=10)
+        l1234 = scenario_sequence(c1=l1, c2=l234, variables=all_variables, c1index=5)
+    else:
+        l12 = scenario_sequence(c1=l1, c2=l2, variables=all_variables, c1index=5)
+        l123 = scenario_sequence(c1=l12, c2=l3, variables=all_variables, c1index=10)
+        l1234 = scenario_sequence(c1=l123, c2=l4, variables=all_variables, c1index=15)
 
     return (ranges, l1234)
 
