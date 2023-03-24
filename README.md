@@ -37,6 +37,7 @@ Note: this repository is included in the [pacti doc](https://github.com/FormalSy
 
 ## Performance results
 
+With 30 operational requirement variations:
 
 ```
 (cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ /opt/local/github.formalsystems/cs-space-mission/.venv/bin/python /opt/local/github.formalsystems/cs-space-mission/space_mission/hyper_requirements.py100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [00:28<00:00, 213.60it/s]
@@ -45,4 +46,15 @@ Total time 28.221071243286133 seconds.
 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [01:12<00:00, 82.63it/s]
 Found 72 admissible and 5928 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
 Total time 72.75603914260864 seconds.
+```
+
+With 300 operational requirement variations:
+
+```
+(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ /opt/local/github.formalsystems/cs-space-mission/.venv/bin/python /opt/local/github.formalsystems/cs-space-mission/space_mission/hyper_requirements.py100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [04:43<00:00, 211.94it/s]
+Found 1337 admissible and 58663 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 283.21819710731506 seconds.
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [12:14<00:00, 81.68it/s]
+Found 694 admissible and 59306 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 735.016928434372 seconds.
 ```
