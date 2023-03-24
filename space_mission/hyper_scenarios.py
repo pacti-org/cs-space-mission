@@ -89,7 +89,6 @@ import itertools
 import pickle
 
 if run5:
-    # parallel = joblib.Parallel(n_jobs=joblib.cpu_count(), require="sharedmem")
     mean_devs = list(zip(scaled_mean_sample5, dev_sample5))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
@@ -106,7 +105,6 @@ if run5:
         s.close()
 
 if run20:
-    # parallel = joblib.Parallel(n_jobs=joblib.cpu_count(), require="sharedmem")
     mean_devs = list(zip(scaled_mean_sample20, dev_sample20))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
