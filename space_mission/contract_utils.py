@@ -126,18 +126,18 @@ def scenario_sequence(
 
 named_contract_t = Tuple[str, PolyhedralContract]
 
-named_contracts_t = List[named_contract_t]
+named_contracts_t = list[named_contract_t]
 
-contract_names_t = List[str]
+contract_names_t = list[str]
 
 failed_merges_t = Tuple[contract_names_t, str, PolyhedralContract]
 
-merge_result_t = Union[List[failed_merges_t], PolyhedralContract]
+merge_result_t = Union[list[failed_merges_t], PolyhedralContract]
 
-merge_results_t = Tuple[List[failed_merges_t], List[PolyhedralContract]]
+merge_results_t = Tuple[list[failed_merges_t], list[PolyhedralContract]]
 
-schedule_result_t = Union[List[failed_merges_t], Schedule]
-schedule_results_t = Tuple[List[failed_merges_t], List[Schedule]]
+schedule_result_t = Union[list[failed_merges_t], Schedule]
+schedule_results_t = Tuple[list[failed_merges_t], list[Schedule]]
 
 
 def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
@@ -162,14 +162,14 @@ def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> 
     # 9! = 362,880
     # Beyond 7, it becomes too expensive to try all permutations.
     assert len(candidates) <= 7
-    failures: List[failed_merges_t] = []
+    failures: list[failed_merges_t] = []
     for c_seq in itertools.permutations(candidates):
         cl = list(c_seq)
         r = try_merge_sequence(c, cl)
         if isinstance(r, PolyhedralContract):
             return r
         elif isinstance(r, list):
-            failures = failures + List[failed_merges_t](r)
+            failures = failures + list[failed_merges_t](r)
             if len(failures) >= max_failures:
                 return failures
         else:
