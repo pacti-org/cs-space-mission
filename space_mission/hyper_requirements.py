@@ -16,12 +16,7 @@ run20 = True
 # Now, let's apply the Latin hypercube generator to sample the scenario hyperparameters.
 from scipy.stats import qmc
 
-
 d = 12
-n5 = 200
-# n20 = 200
-# n20 = 100
-n20 = 50
 
 o5 = 20
 o20 = 20
@@ -120,7 +115,7 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
 
 
 def schedulability_analysis5(
-    scenario: Tuple[List[tuple2float], PolyhedralContract], reqs: np.ndarray
+    scenario: Tuple[list[tuple2float], PolyhedralContract], reqs: np.ndarray
 ) -> schedule_result_t:
     """
     Schedulability analysis for the 5-step scenario sequence.
@@ -145,18 +140,18 @@ import pickle
 from p_tqdm import p_umap
 
 if run5:
-    s5 = open("src/space_mission/data/scenarios5.data", "rb")
+    s5 = open("space_mission/data/scenarios5.data", "rb")
     scenarios = pickle.load(s5)
     s5.close()
 
     srs = [(scenario, req) for scenario in scenarios for req in scaled_op_sample]
     ta = time.time()
-    all_results: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs)
+    all_results: list[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs)
     tb = time.time()
     results: schedule_results_t = [], []
     for r in all_results:
         if isinstance(r, list):
-            results = results[0] + List[failed_merges_t](r), results[1]
+            results = results[0] + list[failed_merges_t](r), results[1]
         elif isinstance(r, Schedule):
             results = results[0], results[1] + [r]
         else:
@@ -166,7 +161,7 @@ if run5:
         f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
     )
 
-    f = open("case_studies/space_mission/data/results5.data", "wb")
+    f = open("space_mission/data/results5.data", "wb")
     pickle.dump(results, f)
     f.close()
 
@@ -305,7 +300,7 @@ def schedulability_analysis20(
     return result
 
 if run20:
-    s20 = open("src/space_mission/data/scenarios20.data", "rb")
+    s20 = open("space_mission/data/scenarios20.data", "rb")
     scenarios = pickle.load(s20)
     s20.close()
 
@@ -317,7 +312,7 @@ if run20:
     results: schedule_results_t = [], []
     for r in all_results:
         if isinstance(r, list):
-            results = results[0] + List[failed_merges_t](r), results[1]
+            results = results[0] + list[failed_merges_t](r), results[1]
         elif isinstance(r, Schedule):
             results = results[0], results[1] + [r]
         else:
@@ -327,6 +322,6 @@ if run20:
         f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
     )
 
-    f = open("case_studies/space_mission/data/results20.data", "wb")
+    f = open("space_mission/data/results20.data", "wb")
     pickle.dump(results, f)
     f.close()

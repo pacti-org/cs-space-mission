@@ -24,7 +24,7 @@ numeric = Union[int, float]
 
 parallelism = True
 run5 = True
-run20 = False
+run20 = True
 
 # Now, let's apply the Latin hypercube generator to sample the scenario hyperparameters.
 from scipy.stats import qmc
