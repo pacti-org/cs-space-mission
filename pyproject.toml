@@ -11,7 +11,7 @@ dynamic = ["version"]
 dependencies = [
     "p-tqdm>=1.4.0",
     "joblib>=1.2.0",
-    "Pacti @ git+https://github.com/FormalSystems/pacti.git@54b4001",
+    "Pacti @ git+https://github.com/FormalSystems/pacti.git@131f25e",
 ]
 requires-python = ">=3.11,<3.12"
 
