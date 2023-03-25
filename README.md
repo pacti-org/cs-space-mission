@@ -58,3 +58,18 @@ Total time 283.21819710731506 seconds.
 Found 694 admissible and 59306 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
 Total time 735.016928434372 seconds.
 ```
+
+The single merge experiment produces worse results than the above:
+
+In this experiment, all the operational requirement contracts are pre-merged before the timing measurements.
+Each of the 60,000 combinations results in a single merge instead of trying to merge the requirement contracts one at a time. Statistically, this single merge strategy results in a much worse performance than the multi-merge approach from above.
+
+```
+(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ /opt/local/github.formalsystems/cs-space-mission/.venv/bin/python /opt/local/github.formalsystems/cs-space-mission/space_mission/hyper_requirements.py
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [06:31<00:00, 153.25it/s]
+Found 1289 admissible and 0 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 391.72249817848206 seconds.
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [15:46<00:00, 63.42it/s]
+Found 665 admissible and 0 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 946.3264775276184 seconds.
+```

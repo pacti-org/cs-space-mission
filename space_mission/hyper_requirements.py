@@ -6,7 +6,7 @@ import functools
 import numpy as np
 from contract_utils import *
 from generators import *
-from typing import Optional, List, Tuple, Union
+from typing import Callable, Optional, List, Tuple, Union
 
 from p_tqdm import p_umap
 
@@ -36,7 +36,7 @@ nb_merge20 = 50
 
 
 m = 300
-#m = 30
+# m = 30
 op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=5)
 op_sample: np.ndarray = op_sampler.random(n=m)
 op_l_bounds = [
@@ -54,6 +54,29 @@ op_u_bounds = [
     90.0,  # nav: high range of  u
 ]
 scaled_op_sample: np.ndarray = qmc.scale(sample=op_sample, l_bounds=op_l_bounds, u_bounds=op_u_bounds)
+
+
+def make_merged_req(f: Callable[[np.ndarray], named_contracts_t], reqs: np.ndarray) -> merged_named_contracts_t:
+    candidates: named_contracts_t = f(reqs)
+    constraints: PolyhedralContract = reduce(PolyhedralContract.merge, [c for _, c in candidates])
+    return (constraints, reqs, candidates)
+
+
+def schedulability_analysis(
+    pair: Tuple[Tuple[list[tuple2float], PolyhedralContract], merged_named_contracts_t]
+) -> schedule_result_t:
+    scenario: Tuple[list[tuple2float], PolyhedralContract] = pair[0]
+    mreq: merged_named_contracts_t = pair[1]
+    result: merge_result_t = perform_merges_seq(scenario[1], mreq)
+    if isinstance(result, PolyhedralContract):
+        return Schedule(scenario=scenario[0], reqs=mreq[1], contract=result)
+    return result
+
+
+import itertools
+import pickle
+
+from p_tqdm import p_umap
 
 
 def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
@@ -114,55 +137,33 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
     return cs1 + cs2 + cs3
 
 
-def schedulability_analysis5(
-    scenario: Tuple[list[tuple2float], PolyhedralContract], reqs: np.ndarray
-) -> schedule_result_t:
-    """
-    Schedulability analysis for the 5-step scenario sequence.
-
-    Args:
-        scenario: A tuple of hyperparameters and a scenario contract
-        reqs: operational requirements
-
-    Returns:
-        A tuple...
-    """
-    op_reqs: named_contracts_t = make_op_requirement_constraints5(reqs)
-    result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
-    if isinstance(result, PolyhedralContract):
-        return Schedule(scenario=scenario[0], reqs=reqs, contract=result)
-    return result
-
-
-import itertools
-import pickle
-
-from p_tqdm import p_umap
-
 if run5:
     s5 = open("space_mission/data/scenarios5.data", "rb")
     scenarios = pickle.load(s5)
     s5.close()
 
-    srs = [(scenario, req) for scenario in scenarios for req in scaled_op_sample]
+    merged_reqs5: List[merged_named_contracts_t] = [
+        make_merged_req(make_op_requirement_constraints5, req) for req in scaled_op_sample
+    ]
+    pairs = list(itertools.product(scenarios, merged_reqs5))
     ta = time.time()
-    all_results: list[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs)
+    all_results5: list[merge_result_t] = p_umap(schedulability_analysis, pairs)
     tb = time.time()
-    results: schedule_results_t = [], []
-    for r in all_results:
+    results5: schedule_results_t = [], []
+    for r in all_results5:
         if isinstance(r, list):
-            results = results[0] + list[failed_merges_t](r), results[1]
+            results5 = results5[0] + list[failed_merges_t](r), results5[1]
         elif isinstance(r, Schedule):
-            results = results[0], results[1] + [r]
+            results5 = results5[0], results5[1] + [r]
         else:
             raise ValueError("should be a merge_result_t")
-    results = sorted(results[0], key=lambda fm: -len(fm)), results[1]
+    results5 = sorted(results5[0], key=lambda fm: -len(fm)), results5[1]
     print(
-        f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
+        f"Found {len(results5[1])} admissible and {len(results5[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
     )
 
     f = open("space_mission/data/results5.data", "wb")
-    pickle.dump(results, f)
+    pickle.dump(results5, f)
     f.close()
 
 
@@ -290,38 +291,31 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
     return cs1 + cs2 + cs3 + cs4 + cs5 + cs6
 
 
-def schedulability_analysis20(
-    scenario: Tuple[List[tuple2float], PolyhedralContract], reqs: np.ndarray
-) -> schedule_result_t:
-    op_reqs: named_contracts_t = make_op_requirement_constraints20(reqs)
-    result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
-    if isinstance(result, PolyhedralContract):
-        return Schedule(scenario=scenario[0], reqs=reqs, contract=result)
-    return result
-
 if run20:
     s20 = open("space_mission/data/scenarios20.data", "rb")
     scenarios = pickle.load(s20)
     s20.close()
 
-    srs = [(scenario, req) for scenario in scenarios for req in scaled_op_sample]
-
+    merged_reqs20: List[merged_named_contracts_t] = [
+        make_merged_req(make_op_requirement_constraints20, req) for req in scaled_op_sample
+    ]
+    pairs = list(itertools.product(scenarios, merged_reqs20))
     ta = time.time()
-    all_results: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis20(sr[0], sr[1]), srs)
+    all_results20: List[merge_result_t] = p_umap(schedulability_analysis, pairs)
     tb = time.time()
-    results: schedule_results_t = [], []
-    for r in all_results:
+    results20: schedule_results_t = [], []
+    for r in all_results20:
         if isinstance(r, list):
-            results = results[0] + list[failed_merges_t](r), results[1]
+            results20 = results20[0] + list[failed_merges_t](r), results20[1]
         elif isinstance(r, Schedule):
-            results = results[0], results[1] + [r]
+            results20 = results20[0], results20[1] + [r]
         else:
             raise ValueError("should be a merge_result_t")
-    results = sorted(results[0], key=lambda fm: -len(fm)), results[1]
+    results20 = sorted(results20[0], key=lambda fm: -len(fm)), results20[1]
     print(
-        f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
+        f"Found {len(results20[1])} admissible and {len(results20[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
     )
 
     f = open("space_mission/data/results20.data", "wb")
-    pickle.dump(results, f)
+    pickle.dump(results5, f)
     f.close()

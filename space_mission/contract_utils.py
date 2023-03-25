@@ -27,8 +27,6 @@ numeric = Union[int, float]
 
 tuple2 = Tuple[Optional[numeric], Optional[numeric]]
 
-tuple2float = Tuple[float, float]
-
 def check_tuple(t: tuple2) -> tuple2float:
     if t[0] is None:
         a = -1.0
@@ -128,6 +126,8 @@ named_contract_t = Tuple[str, PolyhedralContract]
 
 named_contracts_t = list[named_contract_t]
 
+merged_named_contracts_t = Tuple[PolyhedralContract, np.ndarray, named_contracts_t]
+
 contract_names_t = list[str]
 
 failed_merges_t = Tuple[contract_names_t, str, PolyhedralContract]
@@ -154,19 +154,22 @@ def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge
 # maximum number of failures.
 max_failures = 1
 
-def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> merge_result_t:
-    failures: list[failed_merges_t] = []
-    for c_seq in itertools.permutations(candidates):
-        cl = list(c_seq)
-        r = try_merge_sequence(c, cl)
-        if isinstance(r, PolyhedralContract):
-            return r
-        elif isinstance(r, list):
-            failures.append(r)
-            if len(failures) >= max_failures:
-                return failures
-        else:
-            raise ValueError(f"{type(r)} should be a merge_result_t")
+def perform_merges_seq(c: PolyhedralContract, mreq: merged_named_contracts_t) -> merge_result_t:
+    try:
+        return c.merge(mreq[0])
+    except ValueError:
+        failures: list[failed_merges_t] = []
+        # for c_seq in itertools.permutations(mreq[2]):
+        #     cl = list(c_seq)
+        #     r = try_merge_sequence(c, cl)
+        #     if isinstance(r, PolyhedralContract):
+        #         return r
+        #     elif isinstance(r, list):
+        #         failures.append(r)
+        #         if len(failures) >= max_failures:
+        #             return failures
+        #     else:
+        #         raise ValueError(f"{type(r)} should be a merge_result_t")
 
-    return failures
+        return failures
 
