@@ -155,13 +155,6 @@ def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge
 max_failures = 1
 
 def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> merge_result_t:
-    # n! is the number of possible permutations of a list of n elements
-    # 6! =     720
-    # 7! =   5,040
-    # 8! =  40,320
-    # 9! = 362,880
-    # Beyond 7, it becomes too expensive to try all permutations.
-    assert len(candidates) <= 7
     failures: list[failed_merges_t] = []
     for c_seq in itertools.permutations(candidates):
         cl = list(c_seq)
@@ -169,7 +162,7 @@ def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> 
         if isinstance(r, PolyhedralContract):
             return r
         elif isinstance(r, list):
-            failures = failures + list[failed_merges_t](r)
+            failures.append(r)
             if len(failures) >= max_failures:
                 return failures
         else:
