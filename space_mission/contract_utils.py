@@ -170,10 +170,3 @@ def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> 
 
     return failures
 
-with open(f"{here}/images.json") as f:
-    file_data = json.load(f)
-
-figure_space_mission_scenario = file_data["figure_space_mission_scenario"]
-figure_space_mission_segments = file_data["figure_space_mission_segments"]
-figure_task_schedule_contracts = file_data["figure_task_schedule_contracts"]
-pacti_interactive_scenario_plot_concept = file_data["pacti_interactive_scenario_plot_concept"]
