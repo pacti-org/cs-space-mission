@@ -6,7 +6,6 @@ from contract_utils import *
 
 from typing import Union
 
-numeric = Union[int, float]
 
 compose_right_to_left = True
 
@@ -17,7 +16,7 @@ nb_compose = 0
 #epsilon = 1e-6
 epsilon = 0
 
-def reset_nb_counts():
+def reset_nb_counts() ->  None:
     global nb_contracts
     nb_contracts = 0
     global nb_merge
@@ -26,7 +25,7 @@ def reset_nb_counts():
     nb_compose = 0
 
 
-def print_counts():
+def print_counts() ->  None:
     print(f"{nb_contracts} contracts; {nb_compose} compositions; {nb_merge} merges.")
 
 
@@ -471,9 +470,6 @@ def generate_navigation_scenario(
         )
     else:
         return steps5
-
-tuple2float = tuple[float, float]
-
 
 
 def make_range(mean: float, dev: float) -> tuple2float:
