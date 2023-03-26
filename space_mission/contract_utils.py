@@ -1,12 +1,9 @@
 """Helper module for the space mission case study."""
 from pacti.terms.polyhedra import PolyhedralContract
 
-from pacti import write_contracts_to_file, read_contracts_from_file
+from pacti import write_contracts_to_file
 from typing import Optional, List, Tuple, Union
-from functools import reduce
 import numpy as np
-import itertools
-import json
 import pathlib
 
 
@@ -15,6 +12,7 @@ tuple2float = Tuple[float, float]
 here = pathlib.Path(__file__).parent.resolve()
 
 epsilon = 0
+
 
 class Schedule:
     def __init__(self, scenario: List[tuple2float], reqs: np.ndarray, contract: PolyhedralContract):
@@ -27,7 +25,6 @@ numeric = Union[int, float]
 
 tuple2 = Tuple[Optional[numeric], Optional[numeric]]
 
-tuple2float = Tuple[float, float]
 
 def check_tuple(t: tuple2) -> tuple2float:
     if t[0] is None:
@@ -119,28 +116,28 @@ def scenario_sequence(
         write_contracts_to_file(
             contracts=[c1, c2_with_inputs_renamed, c12_with_outputs_kept],
             names=["c1", "c2_with_inputs_renamed", "c12_with_outputs_kept"],
-            file_name=file_name)
+            file_name=file_name,
+        )
 
     return c12
 
 
 named_contract_t = Tuple[str, PolyhedralContract]
 
-named_contracts_t = list[named_contract_t]
+named_contracts_t = List[named_contract_t]
 
-contract_names_t = list[str]
+contract_names_t = List[str]
 
 failed_merges_t = Tuple[contract_names_t, str, PolyhedralContract]
 
-merge_result_t = Union[list[failed_merges_t], PolyhedralContract]
+merge_result_t = Union[failed_merges_t, PolyhedralContract]
 
-merge_results_t = Tuple[list[failed_merges_t], list[PolyhedralContract]]
+schedule_result_t = Union[failed_merges_t, Schedule]
 
-schedule_result_t = Union[list[failed_merges_t], Schedule]
-schedule_results_t = Tuple[list[failed_merges_t], list[Schedule]]
+schedule_results_t = Tuple[List[failed_merges_t], List[Schedule]]
 
 
-def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
+def perform_merges_seq(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
     names: contract_names_t = []
     current: PolyhedralContract = c
     for cn, cc in c_seq:
@@ -148,25 +145,5 @@ def try_merge_sequence(c: PolyhedralContract, c_seq: named_contracts_t) -> merge
             current = current.merge(cc)
             names.append(cn)
         except ValueError:
-            return [(names, cn, cc)]
+            return (names, cn, cc)
     return current
-
-# maximum number of failures.
-max_failures = 1
-
-def perform_merges_seq(c: PolyhedralContract, candidates: named_contracts_t) -> merge_result_t:
-    failures: list[failed_merges_t] = []
-    for c_seq in itertools.permutations(candidates):
-        cl = list(c_seq)
-        r = try_merge_sequence(c, cl)
-        if isinstance(r, PolyhedralContract):
-            return r
-        elif isinstance(r, list):
-            failures.append(r)
-            if len(failures) >= max_failures:
-                return failures
-        else:
-            raise ValueError(f"{type(r)} should be a merge_result_t")
-
-    return failures
-

@@ -1,17 +1,14 @@
 import time
-from base64 import b64decode
-from pacti import write_contracts_to_file
 from pacti.terms.polyhedra import *
 import functools
 import numpy as np
 from contract_utils import *
 from generators import *
-from typing import Optional, List, Tuple, Union
-
-from p_tqdm import p_umap
+from typing import List, Tuple
 
 run5 = True
 run20 = True
+
 
 # Now, let's apply the Latin hypercube generator to sample the scenario hyperparameters.
 from scipy.stats import qmc
@@ -35,8 +32,8 @@ nb_compose20 = 63
 nb_merge20 = 50
 
 
-m = 300
-#m = 30
+# m = 300
+m = 30
 op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=5)
 op_sample: np.ndarray = op_sampler.random(n=m)
 op_l_bounds = [
@@ -114,6 +111,11 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
     return cs1 + cs2 + cs3
 
 
+import pickle
+from pathos.helpers import cpu_count
+from p_tqdm import p_umap
+
+
 def schedulability_analysis5(
     scenario: Tuple[list[tuple2float], PolyhedralContract], reqs: np.ndarray
 ) -> schedule_result_t:
@@ -134,35 +136,32 @@ def schedulability_analysis5(
     return result
 
 
-import itertools
-import pickle
-
-from p_tqdm import p_umap
-
 if run5:
     s5 = open("space_mission/data/scenarios5.data", "rb")
-    scenarios = pickle.load(s5)
+    scenarios5 = pickle.load(s5)
     s5.close()
 
-    srs = [(scenario, req) for scenario in scenarios for req in scaled_op_sample]
+    srs = [(scenario, req) for scenario in scenarios5 for req in scaled_op_sample]
     ta = time.time()
-    all_results: list[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs)
+    all_results5: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs, num_cpus=32)
     tb = time.time()
-    results: schedule_results_t = [], []
-    for r in all_results:
-        if isinstance(r, list):
-            results = results[0] + list[failed_merges_t](r), results[1]
+    results5: schedule_results_t = [], []
+    for r in all_results5:
+        if isinstance(r, tuple):
+            fm: List[failed_merges_t] = list[failed_merges_t](r)
+            results5 = results5[0] + [fm], results5[1]
         elif isinstance(r, Schedule):
-            results = results[0], results[1] + [r]
+            results5 = results5[0], results5[1] + [r]
         else:
             raise ValueError("should be a merge_result_t")
-    results = sorted(results[0], key=lambda fm: -len(fm)), results[1]
+    results5 = sorted(results5[0], key=lambda fm: -len(fm[0])), results5[1]
     print(
-        f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
+        f"Found {len(results5[1])} admissible and {len(results5[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios5)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios5)} scenarios.\n"
+        f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs."
     )
 
     f = open("space_mission/data/results5.data", "wb")
-    pickle.dump(results, f)
+    pickle.dump(results5, f)
     f.close()
 
 
@@ -299,29 +298,32 @@ def schedulability_analysis20(
         return Schedule(scenario=scenario[0], reqs=reqs, contract=result)
     return result
 
+
 if run20:
     s20 = open("space_mission/data/scenarios20.data", "rb")
-    scenarios = pickle.load(s20)
+    scenarios20 = pickle.load(s20)
     s20.close()
 
-    srs = [(scenario, req) for scenario in scenarios for req in scaled_op_sample]
+    srs = [(scenario, req) for scenario in scenarios20 for req in scaled_op_sample]
 
     ta = time.time()
-    all_results: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis20(sr[0], sr[1]), srs)
+    all_results20: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis20(sr[0], sr[1]), srs)
     tb = time.time()
-    results: schedule_results_t = [], []
-    for r in all_results:
-        if isinstance(r, list):
-            results = results[0] + list[failed_merges_t](r), results[1]
+    results20: schedule_results_t = [], []
+    for r in all_results20:
+        if isinstance(r, tuple):
+            fm: List[failed_merges_t] = list[failed_merges_t](r)
+            results20 = results20[0] + [fm], results20[1]
         elif isinstance(r, Schedule):
-            results = results[0], results[1] + [r]
+            results20 = results20[0], results20[1] + [r]
         else:
             raise ValueError("should be a merge_result_t")
-    results = sorted(results[0], key=lambda fm: -len(fm)), results[1]
+    results20 = sorted(results20[0], key=lambda fm: -len(fm[0])), results20[1]
     print(
-        f"Found {len(results[1])} admissible and {len(results[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios)} scenarios.\nTotal time {tb-ta} seconds."
+        f"Found {len(results20[1])} admissible and {len(results20[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios20)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios20)} scenarios.\n"
+        f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs."
     )
 
     f = open("space_mission/data/results20.data", "wb")
-    pickle.dump(results, f)
+    pickle.dump(results20, f)
     f.close()

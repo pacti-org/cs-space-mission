@@ -3,14 +3,8 @@ import joblib
 from base64 import b64decode
 from pacti import write_contracts_to_file
 from pacti.terms.polyhedra import *
-from pacti.iocontract import IoContract, Var
-from PIL import Image
-import matplotlib.pyplot as plt
 import os
 import numpy as np
-from matplotlib import patches
-import pdb
-from matplotlib.collections import PatchCollection
 from contract_utils import *
 from generators import *
 
@@ -18,8 +12,6 @@ from typing import Optional, Tuple, Union
 
 from tqdm.auto import tqdm
 from p_tqdm import p_umap
-
-numeric = Union[int, float]
 
 
 parallelism = True
@@ -73,8 +65,6 @@ dev_sampler = qmc.LatinHypercube(d=d)
 dev_sample5: np.ndarray = dev_sampler.random(n=n5)
 dev_sample20: np.ndarray = dev_sampler.random(n=n20)
 
-tuple2float = Tuple[float, float]
-
 nb_contracts5 = 23
 nb_compose5 = 12
 nb_merge5 = 10
@@ -83,8 +73,6 @@ nb_contracts20 = 115
 nb_compose20 = 63
 nb_merge20 = 50
 
-tuple2 = Tuple[Optional[numeric], Optional[numeric]]
-
 import itertools
 import pickle
 
@@ -92,33 +80,33 @@ if run5:
     mean_devs = list(zip(scaled_mean_sample5, dev_sample5))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: make_scenario(1, md[0], md[1], True), mean_devs)
+    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: make_scenario(1, md[0], md[1], True), mean_devs)
     tb = time.time()
 
-    if scenarios:
-        print(f"All {len(scenarios)} hyperparameter variations of the 5-step scenario sequence generated in {tb-ta} seconds.")
+    if scenarios5:
+        print(f"All {len(scenarios5)} hyperparameter variations of the 5-step scenario sequence generated in {tb-ta} seconds.")
         print(
             f"Total count of Pacti operations: {nb_contracts5} contracts; {nb_merge5} merges; and {nb_compose5} compositions."
         )
         s = open("space_mission/data/scenarios5.data", "wb")
-        pickle.dump(scenarios, s)
+        pickle.dump(scenarios5, s)
         s.close()
 
 if run20:
     mean_devs = list(zip(scaled_mean_sample20, dev_sample20))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: long_scenario(md[0], md[1]), mean_devs)
+    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: long_scenario(md[0], md[1]), mean_devs)
     tb = time.time()
 
-    if scenarios:
+    if scenarios20:
         print(
-            f"All {len(scenarios)} hyperparameter variations of the 20-step scenario sequence generated.\nTotal time {tb-ta} seconds using a maximum of {joblib.cpu_count()} concurrent jobs."
+            f"All {len(scenarios20)} hyperparameter variations of the 20-step scenario sequence generated.\nTotal time {tb-ta} seconds using a maximum of {joblib.cpu_count()} concurrent jobs."
         )
         print(
             f"Total count of Pacti operations: {nb_contracts20} contracts; {nb_merge20} merges; and {nb_compose20} compositions."
         )
 
         s = open("space_mission/data/scenarios20.data", "wb")
-        pickle.dump(scenarios, s)
+        pickle.dump(scenarios20, s)
         s.close()
