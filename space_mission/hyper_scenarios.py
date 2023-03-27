@@ -1,35 +1,24 @@
 import time
-import joblib
-from base64 import b64decode
-from pacti import write_contracts_to_file
 from pacti.terms.polyhedra import *
 import os
 import numpy as np
 from contract_utils import *
 from generators import *
 
-from typing import Optional, Tuple, Union
+from typing import Tuple
 
-from tqdm.auto import tqdm
 from p_tqdm import p_umap
-
-
-parallelism = True
-run5 = True
-run20 = True
 
 # Now, let's apply the Latin hypercube generator to sample the scenario hyperparameters.
 from scipy.stats import qmc
 
-d = 12
-n5 = 200
-n20 = 200
-# n20 = 100
-# n20 = 50
+import pickle
+from pathos.helpers import cpu_count
 
-mean_sampler = qmc.LatinHypercube(d=d)
-mean_sample5: np.ndarray = mean_sampler.random(n=n5)
-mean_sample20: np.ndarray = mean_sampler.random(n=n20)
+run5 = True
+run20 = True
+
+# Hyperparameter ranges
 l_bounds = [
     2.0,  # power: min dns cons
     2.5,  # power: min chrg gen
@@ -58,55 +47,60 @@ u_bounds = [
     1.4,  # nav: max tcm_dv noise
     0.5,  # nav: max tcm_dv progress
 ]
-scaled_mean_sample5: np.ndarray = qmc.scale(sample=mean_sample5, l_bounds=l_bounds, u_bounds=u_bounds)
-scaled_mean_sample20: np.ndarray = qmc.scale(sample=mean_sample20, l_bounds=l_bounds, u_bounds=u_bounds)
 
-dev_sampler = qmc.LatinHypercube(d=d)
-dev_sample5: np.ndarray = dev_sampler.random(n=n5)
-dev_sample20: np.ndarray = dev_sampler.random(n=n20)
-
-nb_contracts5 = 23
-nb_compose5 = 12
-nb_merge5 = 10
-
-nb_contracts20 = 115
-nb_compose20 = 63
-nb_merge20 = 50
-
-import itertools
-import pickle
+mean_sampler = qmc.LatinHypercube(d=len(l_bounds))
+dev_sampler = qmc.LatinHypercube(d=len(l_bounds))
 
 if run5:
+    n5 = 200
+    mean_sample5: np.ndarray = mean_sampler.random(n=n5)
+    scaled_mean_sample5: np.ndarray = qmc.scale(sample=mean_sample5, l_bounds=l_bounds, u_bounds=u_bounds)
+    dev_sample5: np.ndarray = dev_sampler.random(n=n5)
+
+    nb_5step_operations = OperationCounts(contracts=23, compositions=12, merges=10)
+
     mean_devs = list(zip(scaled_mean_sample5, dev_sample5))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: make_scenario(1, md[0], md[1], True), mean_devs)
+    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(
+        lambda md: make_scenario(1, md[0], md[1], True), mean_devs
+    )
     tb = time.time()
 
     if scenarios5:
-        print(f"All {len(scenarios5)} hyperparameter variations of the 5-step scenario sequence generated in {tb-ta} seconds.")
         print(
-            f"Total count of Pacti operations: {nb_contracts5} contracts; {nb_merge5} merges; and {nb_compose5} compositions."
+            f"All {len(scenarios5)} hyperparameter variations of the 5-step scenario sequence generated\n"
+            f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs.\n"
+            f"Total count of Pacti operations for each 5-step scenario: {nb_5step_operations}"
         )
         s = open("space_mission/data/scenarios5.data", "wb")
         pickle.dump(scenarios5, s)
         s.close()
 
 if run20:
+    n20 = 200
+    # n20 = 100
+    # n20 = 50
+    mean_sample20: np.ndarray = mean_sampler.random(n=n20)
+    scaled_mean_sample20: np.ndarray = qmc.scale(sample=mean_sample20, l_bounds=l_bounds, u_bounds=u_bounds)
+    dev_sample20: np.ndarray = dev_sampler.random(n=n20)
+
+    nb_20step_operations = OperationCounts(contracts=115, compositions=63, merges=50)
+
     mean_devs = list(zip(scaled_mean_sample20, dev_sample20))
     print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(lambda md: long_scenario(md[0], md[1]), mean_devs)
+    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(
+        lambda md: long_scenario(md[0], md[1]), mean_devs
+    )
     tb = time.time()
 
     if scenarios20:
         print(
-            f"All {len(scenarios20)} hyperparameter variations of the 20-step scenario sequence generated.\nTotal time {tb-ta} seconds using a maximum of {joblib.cpu_count()} concurrent jobs."
+            f"All {len(scenarios20)} hyperparameter variations of the 20-step scenario sequence generated.\n"
+            f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs.\n"
+            f"Total count of Pacti operations for each 20-step scenario: {nb_20step_operations}"
         )
-        print(
-            f"Total count of Pacti operations: {nb_contracts20} contracts; {nb_merge20} merges; and {nb_compose20} compositions."
-        )
-
         s = open("space_mission/data/scenarios20.data", "wb")
         pickle.dump(scenarios20, s)
         s.close()

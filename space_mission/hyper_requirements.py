@@ -6,36 +6,17 @@ from contract_utils import *
 from generators import *
 from typing import List, Tuple
 
-run5 = True
-run20 = True
-
+import pickle
+from pathos.helpers import cpu_count
+from p_tqdm import p_umap
 
 # Now, let's apply the Latin hypercube generator to sample the scenario hyperparameters.
 from scipy.stats import qmc
 
-d = 12
-
-o5 = 20
-o20 = 20
-dev_sampler = qmc.LatinHypercube(d=d)
-dev_sample5: np.ndarray = dev_sampler.random(n=o5)
-dev_sample20: np.ndarray = dev_sampler.random(n=o20)
+run5 = True
+run20 = True
 
 
-nb_contracts5 = 23
-nb_compose5 = 12
-nb_merge5 = 10
-
-
-nb_contracts20 = 115
-nb_compose20 = 63
-nb_merge20 = 50
-
-
-m = 300
-# m = 30
-op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=5)
-op_sample: np.ndarray = op_sampler.random(n=m)
 op_l_bounds = [
     90.0,  # power: low range of initial soc
     5.0,  # power: low range of exit soc at each step
@@ -50,6 +31,15 @@ op_u_bounds = [
     100.0,  # sci: high range of  d
     90.0,  # nav: high range of  u
 ]
+
+
+op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=len(op_l_bounds))
+
+m = 300
+# m = 20
+
+op_sample: np.ndarray = op_sampler.random(n=m)
+
 scaled_op_sample: np.ndarray = qmc.scale(sample=op_sample, l_bounds=op_l_bounds, u_bounds=op_u_bounds)
 
 
@@ -111,11 +101,6 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
     return cs1 + cs2 + cs3
 
 
-import pickle
-from pathos.helpers import cpu_count
-from p_tqdm import p_umap
-
-
 def schedulability_analysis5(
     scenario: Tuple[list[tuple2float], PolyhedralContract], reqs: np.ndarray
 ) -> schedule_result_t:
@@ -143,18 +128,9 @@ if run5:
 
     srs = [(scenario, req) for scenario in scenarios5 for req in scaled_op_sample]
     ta = time.time()
-    all_results5: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs, num_cpus=32)
+    all_results5: List[schedule_result_t] = p_umap(lambda sr: schedulability_analysis5(sr[0], sr[1]), srs, num_cpus=32)
     tb = time.time()
-    results5: schedule_results_t = [], []
-    for r in all_results5:
-        if isinstance(r, tuple):
-            fm: List[failed_merges_t] = list[failed_merges_t](r)
-            results5 = results5[0] + [fm], results5[1]
-        elif isinstance(r, Schedule):
-            results5 = results5[0], results5[1] + [r]
-        else:
-            raise ValueError("should be a merge_result_t")
-    results5 = sorted(results5[0], key=lambda fm: -len(fm[0])), results5[1]
+    results5: schedule_results_t = aggregate_schedule_results(all_results5)
     print(
         f"Found {len(results5[1])} admissible and {len(results5[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios5)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios5)} scenarios.\n"
         f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs."
@@ -307,18 +283,9 @@ if run20:
     srs = [(scenario, req) for scenario in scenarios20 for req in scaled_op_sample]
 
     ta = time.time()
-    all_results20: List[merge_result_t] = p_umap(lambda sr: schedulability_analysis20(sr[0], sr[1]), srs)
+    all_results20: List[schedule_result_t] = p_umap(lambda sr: schedulability_analysis20(sr[0], sr[1]), srs)
     tb = time.time()
-    results20: schedule_results_t = [], []
-    for r in all_results20:
-        if isinstance(r, tuple):
-            fm: List[failed_merges_t] = list[failed_merges_t](r)
-            results20 = results20[0] + [fm], results20[1]
-        elif isinstance(r, Schedule):
-            results20 = results20[0], results20[1] + [r]
-        else:
-            raise ValueError("should be a merge_result_t")
-    results20 = sorted(results20[0], key=lambda fm: -len(fm[0])), results20[1]
+    results20: schedule_results_t = aggregate_schedule_results(all_results20)
     print(
         f"Found {len(results20[1])} admissible and {len(results20[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios20)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios20)} scenarios.\n"
         f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs."
