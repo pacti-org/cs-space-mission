@@ -276,3 +276,6 @@ examples/.ipynb_checkpoints/*
 
 # Draw.io
 *.bkp
+
+# Data files
+*.data
