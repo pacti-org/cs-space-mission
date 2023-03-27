@@ -3,6 +3,7 @@ from pacti.terms.polyhedra import PolyhedralContract
 
 from pacti import write_contracts_to_file
 from typing import Optional, List, Tuple, Union
+from dataclasses import dataclass
 import numpy as np
 import pathlib
 
@@ -13,12 +14,20 @@ here = pathlib.Path(__file__).parent.resolve()
 
 epsilon = 0
 
+@dataclass(frozen=True, kw_only=True)
+class OperationCounts:
+    contracts: int
+    compositions: int
+    merges: int
 
+    def __str__(self) -> str:
+        return f"{self.contracts} contracts, {self.compositions} compositions, and {self.merges} merges"
+    
+@dataclass(frozen=True)
 class Schedule:
-    def __init__(self, scenario: List[tuple2float], reqs: np.ndarray, contract: PolyhedralContract):
-        self.scenario = scenario
-        self.reqs = reqs
-        self.contract = contract
+    scenario: List[tuple2float]
+    reqs: np.ndarray
+    contract: PolyhedralContract
 
 
 numeric = Union[int, float]
@@ -128,13 +137,19 @@ named_contracts_t = List[named_contract_t]
 
 contract_names_t = List[str]
 
-failed_merges_t = Tuple[contract_names_t, str, PolyhedralContract]
 
-merge_result_t = Union[failed_merges_t, PolyhedralContract]
+@dataclass(frozen=True)
+class FailedMerges:
+    merged: contract_names_t
+    failed_name: str
+    failed_contract: PolyhedralContract
 
-schedule_result_t = Union[failed_merges_t, Schedule]
 
-schedule_results_t = Tuple[List[failed_merges_t], List[Schedule]]
+merge_result_t = Union[FailedMerges, PolyhedralContract]
+
+schedule_result_t = Union[FailedMerges, Schedule]
+
+schedule_results_t = Tuple[List[FailedMerges], List[Schedule]]
 
 
 def perform_merges_seq(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
@@ -145,5 +160,11 @@ def perform_merges_seq(c: PolyhedralContract, c_seq: named_contracts_t) -> merge
             current = current.merge(cc)
             names.append(cn)
         except ValueError:
-            return (names, cn, cc)
+            return FailedMerges(names, cn, cc)
     return current
+
+
+def aggregate_schedule_results(srs: List[schedule_result_t]) -> schedule_results_t:
+    f: List[FailedMerges] = sorted([r for r in srs if isinstance(r, FailedMerges)], key=lambda fm: -len(fm.merged))
+    s: List[Schedule] = [r for r in srs if isinstance(r, Schedule)]
+    return f, s
