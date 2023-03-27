@@ -32,8 +32,8 @@ nb_compose20 = 63
 nb_merge20 = 50
 
 
-# m = 300
-m = 30
+m = 300
+# m = 30
 op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=5)
 op_sample: np.ndarray = op_sampler.random(n=m)
 op_l_bounds = [
