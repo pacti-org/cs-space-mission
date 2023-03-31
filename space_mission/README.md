@@ -5,7 +5,7 @@
 Current scenario generation performance:
 
 ```shell
-(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ /opt/local/github.formalsystems/cs-space-mission/.venv/bin/python /opt/local/github.formalsystems/cs-space-mission/space_mission/hyper_scenarios.py
+(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission$ /opt/local/github.pacti-org/cs-space-mission/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission/space_mission/hyper_scenarios.py
 Generating 200 hyperparameter variations of the 5-step scenario
 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:14<00:00, 13.71it/s]
 All 200 hyperparameter variations of the 5-step scenario sequence generated
@@ -21,12 +21,12 @@ Total count of Pacti operations for each 20-step scenario: 115 contracts, 63 com
 Current schedulability analysis performance:
 
 ```shell
-(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ /opt/local/github.formalsystems/cs-space-mission/.venv/bin/python /opt/local/github.formalsystems/cs-space-mission/space_mission/hyper_requirements.py
+(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission$ /opt/local/github.pacti-org/cs-space-mission/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission/space_mission/hyper_requirements.py
 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [04:54<00:00, 203.48it/s]
 Found 1376 admissible and 58624 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
 Total time 295.0339021682739 seconds with up to 32 CPUs.
 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [13:13<00:00, 75.61it/s]
 Found 891 admissible and 59109 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
 Total time 794.0496697425842 seconds with up to 32 CPUs.
-(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.formalsystems/cs-space-mission$ 
+(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission$ 
 ```
