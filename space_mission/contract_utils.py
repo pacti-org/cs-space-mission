@@ -7,6 +7,9 @@ from dataclasses import dataclass
 import numpy as np
 import pathlib
 
+from cpuinfo import get_cpu_info
+cpu_info = get_cpu_info()
+cpu_info_message = f"{cpu_info['brand_raw']} @ {cpu_info['hz_advertised_friendly']} with up to {cpu_info['count']} threads."
 
 tuple2float = Tuple[float, float]
 
