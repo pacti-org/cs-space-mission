@@ -25,6 +25,7 @@ def cpu_usage_plot():
     cpu_usage_data = []
     max_data_points = 50
     line, = ax.plot(cpu_usage_data)
+    fill = ax.fill_between(range(len(cpu_usage_data)), cpu_usage_data, 0, alpha=0.3)
 
     img = widgets.Image()
     display_handle = display(img, display_id=True)
@@ -37,8 +38,14 @@ def cpu_usage_plot():
         if len(cpu_usage_data) > max_data_points:
             cpu_usage_data.pop(0)
 
-        line.set_ydata(cpu_usage_data)
-        line.set_xdata(range(len(cpu_usage_data)))
+        ax.clear()
+        # bump the limit by one to see data with y=100
+        ax.set_ylim(0, 101)
+        ax.set_xlabel("Time")
+        ax.set_ylabel("CPU Usage (%)")
+        
+        line, = ax.plot(range(len(cpu_usage_data)), cpu_usage_data)
+        ax.fill_between(range(len(cpu_usage_data)), cpu_usage_data, 0, alpha=0.3)
 
         buf = BytesIO()
         fig.savefig(buf, format='png')
@@ -49,6 +56,7 @@ def cpu_usage_plot():
 
         ax.relim()
         ax.autoscale_view()
+
 
     def stop_condition():
         nonlocal stop
