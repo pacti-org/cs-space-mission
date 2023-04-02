@@ -15,7 +15,7 @@ def get_cpu_usage():
     return psutil.cpu_percent(interval=0.1)
 
 @contextmanager
-def cpu_usage_plot():
+def cpu_usage_plot(max_data_points: int = 50):
     backend = matplotlib.get_backend()
     matplotlib.use('agg')
 
@@ -26,7 +26,8 @@ def cpu_usage_plot():
     ax.set_ylabel("CPU Usage (%)")
 
     cpu_usage_data = []
-    max_data_points = 50
+    time_data = []
+    start_time = time.time()
     line, = ax.plot(cpu_usage_data)
     fill = ax.fill_between(range(len(cpu_usage_data)), cpu_usage_data, 0, alpha=0.3)
 
@@ -34,21 +35,24 @@ def cpu_usage_plot():
     display_handle = ipyd(img, display_id=True)
 
     def update_plot():
-        nonlocal cpu_usage_data
+        nonlocal cpu_usage_data, time_data
         cpu_usage = get_cpu_usage()
         cpu_usage_data.append(cpu_usage)
+        current_time = time.time() - start_time
+        time_data.append(current_time)
 
         if len(cpu_usage_data) > max_data_points:
             cpu_usage_data.pop(0)
+            time_data.pop(0)
 
         ax.clear()
         # bump the limit by one to see data with y=100
         ax.set_ylim(0, 101)
-        ax.set_xlabel("Time")
+        ax.set_xlabel("Time (seconds)")
         ax.set_ylabel("CPU Usage (%)")
         
-        line, = ax.plot(range(len(cpu_usage_data)), cpu_usage_data)
-        ax.fill_between(range(len(cpu_usage_data)), cpu_usage_data, 0, alpha=0.3)
+        line, = ax.plot(time_data, cpu_usage_data)
+        ax.fill_between(time_data, cpu_usage_data, 0, alpha=0.3)
 
         buf = BytesIO()
         fig.savefig(buf, format='png')
