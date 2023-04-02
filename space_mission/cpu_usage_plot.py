@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-from IPython.display import display, clear_output, update_display, Image
+from IPython.display import display, clear_output, Image
 import ipywidgets as widgets
 import threading
 from contextlib import contextmanager
@@ -17,7 +17,8 @@ def get_cpu_usage():
 @contextmanager
 def cpu_usage_plot():
     fig, ax = plt.subplots(figsize=(8, 4))
-    ax.set_ylim(0, 101)
+    # the upper limit is 101 so that we can see data points with y=100
+    ax.set_ylim(0, 101) 
     ax.set_xlabel("Time")
     ax.set_ylabel("CPU Usage (%)")
 
@@ -25,8 +26,8 @@ def cpu_usage_plot():
     max_data_points = 50
     line, = ax.plot(cpu_usage_data)
 
-    plot_output = widgets.Output()
-    display(plot_output)
+    img = widgets.Image()
+    display_handle = display(img, display_id=True)
 
     def update_plot():
         nonlocal cpu_usage_data
@@ -42,11 +43,9 @@ def cpu_usage_plot():
         buf = BytesIO()
         fig.savefig(buf, format='png')
         buf.seek(0)
-        img = Image(data=buf.read())
+        img.value = buf.read()
 
-        with plot_output:
-            clear_output(wait=True)
-            display(img)
+        display_handle.update(img)
 
         ax.relim()
         ax.autoscale_view()
@@ -73,5 +72,9 @@ def cpu_usage_plot():
     finally:
         stop = True
         cpu_usage_plot_thread.join()
-        with plot_output:
-            clear_output(wait=True)
+        clear_output(wait=True)
+
+    # Display the final plot as part of the notebook
+    matplotlib.use('module://ipykernel.pylab.backend_inline')
+    fig.savefig(BytesIO(), format='png')  # This line is necessary to refresh the plot for the inline backend
+    plt.show()
