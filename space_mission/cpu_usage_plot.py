@@ -2,9 +2,9 @@ import psutil
 import time
 import numpy as np
 import matplotlib
-matplotlib.use('agg')
+
 import matplotlib.pyplot as plt
-from IPython.display import display, clear_output, Image
+from IPython.display import display as ipyd, clear_output, Image as IPythonImage
 import ipywidgets as widgets
 import threading
 from contextlib import contextmanager
@@ -16,6 +16,9 @@ def get_cpu_usage():
 
 @contextmanager
 def cpu_usage_plot():
+    backend = matplotlib.get_backend()
+    matplotlib.use('agg')
+
     fig, ax = plt.subplots(figsize=(8, 4))
     # the upper limit is 101 so that we can see data points with y=100
     ax.set_ylim(0, 101) 
@@ -28,7 +31,7 @@ def cpu_usage_plot():
     fill = ax.fill_between(range(len(cpu_usage_data)), cpu_usage_data, 0, alpha=0.3)
 
     img = widgets.Image()
-    display_handle = display(img, display_id=True)
+    display_handle = ipyd(img, display_id=True)
 
     def update_plot():
         nonlocal cpu_usage_data
@@ -75,14 +78,32 @@ def cpu_usage_plot():
     cpu_usage_plot_thread = threading.Thread(target=display_cpu_usage_plot_widget, args=(stop_condition,), daemon=True)
     cpu_usage_plot_thread.start()
 
+    output_widget = widgets.Output()
+    ipyd(output_widget)
+
+    stored_output = widgets.Output()
+    
+    # Create a VBox to stack output_widget and stored_output vertically
+    display_widget = widgets.VBox([output_widget, stored_output])
+    ipyd(display_widget)
+
     try:
-        yield
+        with output_widget:
+            with stored_output:
+                yield
     finally:
         stop = True
         cpu_usage_plot_thread.join()
         clear_output(wait=True)
 
     # Display the final plot as part of the notebook
-    matplotlib.use('module://ipykernel.pylab.backend_inline')
-    fig.savefig(BytesIO(), format='png')  # This line is necessary to refresh the plot for the inline backend
-    plt.show()
+
+    final_buf = BytesIO()
+    fig.savefig(final_buf, format='png')
+    final_buf.seek(0)
+    plt.close(fig) 
+    
+    matplotlib.use(backend)
+    ipyd(IPythonImage(data=final_buf.getvalue()))
+
+    ipyd(stored_output)
