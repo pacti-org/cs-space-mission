@@ -13,10 +13,11 @@ nb_contracts = 0
 nb_merge = 0
 nb_compose = 0
 
-#epsilon = 1e-6
+# epsilon = 1e-6
 epsilon = 0
 
-def reset_nb_counts() ->  None:
+
+def reset_nb_counts() -> None:
     global nb_contracts
     nb_contracts = 0
     global nb_merge
@@ -25,7 +26,7 @@ def reset_nb_counts() ->  None:
     nb_compose = 0
 
 
-def print_counts() ->  None:
+def print_counts() -> None:
     print(f"{nb_contracts} contracts; {nb_compose} compositions; {nb_merge} merges.")
 
 
@@ -143,7 +144,6 @@ def generate_power_scenario(
         return steps5.rename_variables([(f"soc{s+4}_exit", f"output_soc{s+4}")])
     else:
         return steps5
-
 
 
 # Science & communication viewpoint
@@ -476,9 +476,10 @@ def make_range(mean: float, dev: float) -> tuple2float:
     delta = mean * dev
     return (mean - delta, mean + delta)
 
+
 def make_scenario(
     s: int, means: np.ndarray, devs: np.ndarray, rename_outputs: bool = False
-) -> tuple[list[tuple2float], PolyhedralContract]:
+) -> Tuple[List[tuple2float], PolyhedralContract]:
     global nb_merge
     nb_merge += 2
 
@@ -507,17 +508,22 @@ def make_scenario(
 
     return (ranges, scenario_pwr.merge(scenario_sci).merge(scenario_nav))
 
+
+def generate_5step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[List[tuple2float], PolyhedralContract]:
+    return make_scenario(1, mean_dev[0], mean_dev[1], True)
+
+
 all_variables = power_variables + science_variables + navigation_variables
 
 
-def long_scenario(means: np.ndarray, devs: np.ndarray) -> tuple[list[tuple2float], PolyhedralContract]:
+def generate_20step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[List[tuple2float], PolyhedralContract]:
     global nb_compose
     nb_compose += 3  # scenario_sequence
 
-    ranges, l1 = make_scenario(s=1, means=means, devs=devs, rename_outputs=False)
-    _, l2 = make_scenario(s=6, means=means, devs=devs, rename_outputs=False)
-    _, l3 = make_scenario(s=11, means=means, devs=devs, rename_outputs=False)
-    _, l4 = make_scenario(s=16, means=means, devs=devs, rename_outputs=True)
+    ranges, l1 = make_scenario(s=1, means=mean_dev[0], devs=mean_dev[1], rename_outputs=False)
+    _, l2 = make_scenario(s=6, means=mean_dev[0], devs=mean_dev[1], rename_outputs=False)
+    _, l3 = make_scenario(s=11, means=mean_dev[0], devs=mean_dev[1], rename_outputs=False)
+    _, l4 = make_scenario(s=16, means=mean_dev[0], devs=mean_dev[1], rename_outputs=True)
 
     if compose_right_to_left:
         l34 = scenario_sequence(c1=l3, c2=l4, variables=all_variables, c1index=15)
@@ -529,5 +535,3 @@ def long_scenario(means: np.ndarray, devs: np.ndarray) -> tuple[list[tuple2float
         l1234 = scenario_sequence(c1=l123, c2=l4, variables=all_variables, c1index=15)
 
     return (ranges, l1234)
-
-

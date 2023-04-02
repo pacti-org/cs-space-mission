@@ -59,23 +59,18 @@ if run5:
 
     nb_5step_operations = OperationCounts(contracts=23, compositions=12, merges=10)
 
-    mean_devs = list(zip(scaled_mean_sample5, dev_sample5))
-    print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(
-        lambda md: make_scenario(1, md[0], md[1], True), mean_devs
-    )
+    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_map(generate_5step_scenario, list(zip(scaled_mean_sample5, dev_sample5)))
     tb = time.time()
 
-    if scenarios5:
-        print(
-            f"All {len(scenarios5)} hyperparameter variations of the 5-step scenario sequence generated\n"
-            f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs.\n"
-            f"Total count of Pacti operations for each 5-step scenario: {nb_5step_operations}"
-        )
-        s = open("space_mission/data/scenarios5.data", "wb")
-        pickle.dump(scenarios5, s)
-        s.close()
+    print(
+        f"Generated {n5} hyperparameter variations of the 5-step scenario in {tb-ta} seconds.\n"
+        f"Running on {cpu_info_message}\n"
+        f"Total count of Pacti operations for each 5-step scenario: {nb_5step_operations}."
+    )
+    s = open("space_mission/data/scenarios5.data", "wb")
+    pickle.dump(scenarios5, s)
+    s.close()
 
 if run20:
     n20 = 200
@@ -87,20 +82,15 @@ if run20:
 
     nb_20step_operations = OperationCounts(contracts=115, compositions=63, merges=50)
 
-    mean_devs = list(zip(scaled_mean_sample20, dev_sample20))
-    print(f"Generating {len(mean_devs)} hyperparameter variations of the 5-step scenario")
     ta = time.time()
-    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(
-        lambda md: long_scenario(md[0], md[1]), mean_devs
-    )
+    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(generate_20step_scenario, list(zip(scaled_mean_sample20, dev_sample20)))
     tb = time.time()
 
-    if scenarios20:
-        print(
-            f"All {len(scenarios20)} hyperparameter variations of the 20-step scenario sequence generated.\n"
-            f"Total time {tb-ta} seconds with up to {cpu_count()} CPUs.\n"
-            f"Total count of Pacti operations for each 20-step scenario: {nb_20step_operations}"
-        )
-        s = open("space_mission/data/scenarios20.data", "wb")
-        pickle.dump(scenarios20, s)
-        s.close()
+    print(
+        f"Generated {n20} hyperparameter variations of the 20-step scenario in {tb-ta} seconds.\n"
+        f"Running on {cpu_info_message}\n"
+        f"Total count of Pacti operations for each 5-step scenario: {nb_20step_operations}."
+    )
+    s = open("space_mission/data/scenarios20.data", "wb")
+    pickle.dump(scenarios20, s)
+    s.close()
