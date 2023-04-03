@@ -15,7 +15,7 @@ def get_cpu_usage():
     return psutil.cpu_percent(interval=0.1)
 
 @contextmanager
-def cpu_usage_plot(max_data_points: int = 50):
+def cpu_usage_plot(max_data_points: int = 200):
     backend = matplotlib.get_backend()
     matplotlib.use('agg')
 
