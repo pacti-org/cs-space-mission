@@ -1,8 +1,12 @@
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-from typing import List, Tuple
+from pacti.iocontract import Var
+from pacti.terms.polyhedra import PolyhedralContract, PolyhedralTermList
+from pacti.terms.polyhedra.plots import plot_guarantees
+from typing import Dict, List, Tuple, Union
+
+numeric = Union[int, float]
 
 
 def plot_steps(
@@ -74,4 +78,37 @@ def plot_steps(
     )
     ax2.set_axis_off()
 
+    return fig
+
+def get_bounds(ptl: PolyhedralTermList, var: str) -> tuple[float, float]:
+    min = ptl.optimize(objective={Var(var): 1}, maximize=False)
+    max = ptl.optimize(objective={Var(var): 1}, maximize=True)
+    return min, max
+
+def calculate_output_bounds_for_input_value(ptl: PolyhedralTermList, inputs: Dict[Var, float], output: Var) -> tuple[float,float]:
+    return get_bounds(ptl.evaluate(inputs).simplify(), output.name)
+
+# Add a callback function for the mouse click event
+def on_hover(ptl: PolyhedralTermList, x_var: Var, y_var: Var, fig: Figure, ax: Axes, event):
+    if event.inaxes == ax:
+        x_coord = event.xdata
+        try:
+            y_min, y_max = calculate_output_bounds_for_input_value(ptl, {x_var: x_coord}, y_var)
+            ax.set_title(f"@ {x_var.name}={x_coord:.2f}\n{y_min:.2f} <= {y_var.name} <= {y_max:.2f}")
+        except ValueError as e:
+            print(f"Contract guarantee hover ValueError:\n{e}")
+            ax.set_title(f"@ {x_var.name}={x_coord:.2f}\nValueError (see message below)")
+        fig.canvas.draw_idle()
+
+def plot_guarantees_with_bounds_hover(
+    contract: PolyhedralContract,
+    x_var: Var,
+    y_var: Var,
+    var_values: Dict[Var, numeric],
+    x_lims: Tuple[numeric, numeric],
+    y_lims: Tuple[numeric, numeric],
+) -> Figure:
+    fig: Figure = plot_guarantees(contract=contract, x_var=x_var, y_var=y_var, var_values=var_values, x_lims=x_lims, y_lims=y_lims)
+    constraints: PolyhedralTermList = contract.a | contract.g
+    fig.canvas.mpl_connect('button_press_event', lambda event: on_hover(constraints, x_var, y_var, fig, fig.axes[0], event))
     return fig
