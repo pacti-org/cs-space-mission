@@ -34,8 +34,8 @@ from scipy.stats import qmc
 
 op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=len(op_l_bounds))
 
-#m = 300
-m = 20
+m = 300
+#m = 20
 
 op_sample: np.ndarray = op_sampler.random(n=m)
 

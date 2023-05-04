@@ -119,7 +119,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                 input_vars=["soc1_entry", "c1_entry", "d1_entry", "u1_entry", "r1_entry"],
                 output_vars=[],
                 assumptions=[
-                    f"-soc1_entry <= -{reqs[0]}",
+                    f"soc1_entry >= {reqs[0]}",
                     f"c1_entry = 0",
                     f"d1_entry={reqs[3]}",
                     f"u1_entry={reqs[4]}",

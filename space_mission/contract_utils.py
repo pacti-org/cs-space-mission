@@ -65,11 +65,12 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
         input_vars=[f"{name}{s}_entry"],
         output_vars=[f"{name}{s}_exit"],
         assumptions=[
-            f"-{name}{s}_entry <= 0",
+            f"0 <= {name}{s}_entry",
         ],
         guarantees=[
             # f"-{name}{s}_exit <= 0",
-            f"| {name}{s}_exit - {name}{s}_entry | <= 0",
+            # f"| {name}{s}_exit - {name}{s}_entry | <= 0",
+            f"{name}{s}_exit = {name}{s}_entry",
             # f"{name}{s}_exit <= 100",
         ],
     )
@@ -106,22 +107,7 @@ def scenario_sequence(
     renamed_c1_outputs = [(f"{v}{c1index}_exit", f"output_{v}{c1index}") for v in variables]
 
     c2_with_inputs_renamed = c2.rename_variables(c2_inputs_to_c1_outputs)
-    # try:
     c12_with_outputs_kept = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs)
-    # except ValueError:
-    #     print(keep_c1_outputs)
-    #     example=f"{here}/json/example-{uuid.uuid4()}.json"
-    #     write_contracts_to_file([c1,c2_with_inputs_renamed],["c1","c2"], example, machine_representation=True)
-    #     conts,_ = read_contracts_from_file(example)
-    #     print("**********************")
-    #     print(c1)
-    #     print("**********************")
-    #     print(conts[0])
-    #     assert c1 == conts[0]
-    #     assert c2_with_inputs_renamed == conts[1]
-    #     print("Exiting on error")
-    #     raise ValueError()
-
     c12 = c12_with_outputs_kept.rename_variables(renamed_c1_outputs)
 
     if file_name:

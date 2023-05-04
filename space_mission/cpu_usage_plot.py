@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib
 
 import matplotlib.pyplot as plt
+from typing import Callable, Iterator, List
 from IPython.display import display as ipyd, clear_output, Image as IPythonImage
 import ipywidgets as widgets
 import threading
@@ -11,11 +12,12 @@ from contextlib import contextmanager
 from io import BytesIO
 
 # Function to get the current CPU usage percentage
-def get_cpu_usage():
-    return psutil.cpu_percent(interval=0.1)
+def get_cpu_usage() -> float:
+    usage: float = psutil.cpu_percent(interval=0.1, percpu=False)
+    return usage
 
 @contextmanager
-def cpu_usage_plot(max_data_points: int = 200):
+def cpu_usage_plot(max_data_points: int = 200) -> Iterator[None]:
     backend = matplotlib.get_backend()
     matplotlib.use('agg')
 
@@ -25,7 +27,7 @@ def cpu_usage_plot(max_data_points: int = 200):
     ax.set_xlabel("Time")
     ax.set_ylabel("CPU Usage (%)")
 
-    cpu_usage_data = []
+    cpu_usage_data: List[float] = []
     time_data = []
     start_time = time.time()
     line, = ax.plot(cpu_usage_data)
@@ -34,7 +36,7 @@ def cpu_usage_plot(max_data_points: int = 200):
     img = widgets.Image()
     display_handle = ipyd(img, display_id=True)
 
-    def update_plot():
+    def update_plot() -> None:
         nonlocal cpu_usage_data, time_data
         cpu_usage = get_cpu_usage()
         cpu_usage_data.append(cpu_usage)
@@ -64,12 +66,13 @@ def cpu_usage_plot(max_data_points: int = 200):
         ax.relim()
         ax.autoscale_view()
 
+    stop = False
 
-    def stop_condition():
+    def stop_condition() -> bool:
         nonlocal stop
         return stop
 
-    def display_cpu_usage_plot_widget(stop_condition):
+    def display_cpu_usage_plot_widget(stop_condition: Callable[[], bool]) -> None:
         nonlocal stop
         try:
             while not stop_condition():

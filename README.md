@@ -37,6 +37,23 @@ Note: this repository is included in the [pacti doc](https://github.com/pacti-or
 
 ## Performance results
 
+### Scenario generation
+
+```
+(cs-space-mission1-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission1$ /opt/local/github.pacti-org/cs-space-mission1/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission1/space_mission/hyper_scenarios.py
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:17<00:00, 11.38it/s]
+Generated 200 hyperparameter variations of the 5-step scenario in 17.717931509017944 seconds.
+Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+Total count of Pacti operations for each 5-step scenario: 23 contracts, 12 compositions, and 10 merges.
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:04<00:00,  1.08it/s]
+Generated 200 hyperparameter variations of the 20-step scenario in 184.4959750175476 seconds.
+Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+Total count of Pacti operations for each 5-step scenario: 115 contracts, 63 compositions, and 50 merges.
+```
+
+### Operational Requirement Verification
+
+
 With 30 operational requirement variations:
 
 ```
@@ -51,10 +68,12 @@ Total time 72.75603914260864 seconds.
 With 300 operational requirement variations:
 
 ```
-(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission$ /opt/local/github.pacti-org/cs-space-mission/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission/space_mission/hyper_requirements.py100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [04:43<00:00, 211.94it/s]
-Found 1337 admissible and 58663 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
-Total time 283.21819710731506 seconds.
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [12:14<00:00, 81.68it/s]
-Found 694 admissible and 59306 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
-Total time 735.016928434372 seconds.
+(cs-space-mission1-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission1$ /opt/local/github.pacti-org/cs-space-mission1/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission1/space_mission/hyper_requirements.py
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [05:00<00:00, 199.90it/s]
+Found 0 admissible and 60000 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 300.2783877849579 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [14:08<00:00, 70.71it/s]
+Found 0 admissible and 60000 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
+Total time 849.0543026924133 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
 ```
