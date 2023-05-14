@@ -51,15 +51,39 @@ def check_tuple(t: tuple2) -> tuple2float:
         b = t[1]
     return (a, b)
 
-def output_bounds(c: PolyhedralContract) -> List[str]:
+
+def bounds(c: PolyhedralContract) -> List[str]:
     bounds=[]
+    for v in sorted(c.inputvars, key=operator.attrgetter('name')):
+        try:
+            b = c.get_variable_bounds(v.name)
+            if b[0]:
+                low = f"{b[0]:.2f}"
+            else:
+                low = "None"
+            if b[1]:
+                high = f"{b[1]:.2f}"
+            else:
+                high = "None"
+            bounds.append(f" input {v.name} in [{low},{high}]")
+        except ValueError:
+            bounds.append(f" input {v.name} is unsatisfiable")
     for v in sorted(c.outputvars, key=operator.attrgetter('name')):
         try:
             b = c.get_variable_bounds(v.name)
-            bounds.append(f"{v.name} in [{b[0]},{b[1]}]")
+            if b[0]:
+                low = f"{b[0]:.2f}"
+            else:
+                low = "None"
+            if b[1]:
+                high = f"{b[1]:.2f}"
+            else:
+                high = "None"
+            bounds.append(f"output {v.name} in [{low},{high}]")
         except ValueError:
-            bounds.append(f"{v.name} is unsatisfiable")
+            bounds.append(f"output {v.name} is unsatisfiable")
     return bounds
+
 
 def nochange_contract(s: int, name: str) -> PolyhedralContract:
     """
@@ -79,10 +103,7 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
             f"0 <= {name}{s}_entry",
         ],
         guarantees=[
-            # f"-{name}{s}_exit <= 0",
-            # f"| {name}{s}_exit - {name}{s}_entry | <= 0",
             f"{name}{s}_exit = {name}{s}_entry",
-            # f"{name}{s}_exit <= 100",
         ],
     )
 
