@@ -1,3 +1,4 @@
+from matplotlib.backend_bases import Event
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
@@ -89,7 +90,7 @@ def calculate_output_bounds_for_input_value(ptl: PolyhedralTermList, inputs: Dic
     return get_bounds(ptl.evaluate(inputs).simplify(), output.name)
 
 # Add a callback function for the mouse click event
-def on_hover(ptl: PolyhedralTermList, x_var: Var, y_var: Var, fig: Figure, ax: Axes, event):
+def on_hover(ptl: PolyhedralTermList, x_var: Var, y_var: Var, fig: Figure, ax: Axes, event: Event) -> None:
     if event.inaxes == ax:
         x_coord = event.xdata
         try:
@@ -110,5 +111,5 @@ def plot_guarantees_with_bounds_hover(
 ) -> Figure:
     fig: Figure = plot_guarantees(contract=contract, x_var=x_var, y_var=y_var, var_values=var_values, x_lims=x_lims, y_lims=y_lims)
     constraints: PolyhedralTermList = contract.a | contract.g
-    fig.canvas.mpl_connect('button_press_event', lambda event: on_hover(constraints, x_var, y_var, fig, fig.axes[0], event))
+    fig.canvas.mpl_connect('button_press_event', lambda event: on_hover(constraints.evaluate(var_values).simplify(), x_var, y_var, fig, fig.axes[0], event))
     return fig

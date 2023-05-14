@@ -1,6 +1,6 @@
 import time
 from pacti.terms.polyhedra import *
-import functools
+from pacti_instrumentation.pacti_counters import summarize_instrumentation_data
 import numpy as np
 from contract_utils import *
 from generators import *
@@ -34,8 +34,10 @@ from scipy.stats import qmc
 
 op_sampler: qmc.LatinHypercube = qmc.LatinHypercube(d=len(op_l_bounds))
 
-m = 300
+m = 100
 #m = 20
+
+K = 5  # Replace 5 with the desired group size
 
 op_sample: np.ndarray = op_sampler.random(n=m)
 
@@ -48,13 +50,28 @@ if run5:
     s5.close()
 
     srs = [(scenario, req) for scenario in scenarios5 for req in scaled_op_sample]
-    ta = time.time()
-    all_results5: List[schedule_result_t] = p_umap(schedulability_analysis5, srs)
-    tb = time.time()
+
+    if K > 1:
+        grouped_srs = [tuple(srs[i:i + K]) for i in range(0, len(srs), K)]
+        ta = time.time()
+        results: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
+        tb = time.time()
+        flat_results = [result for group in results for result in group]
+        stats = summarize_instrumentation_data([result[0] for result in flat_results])
+        all_results5 = [result[1] for result in flat_results if result[1]]
+    else:
+        ta = time.time()
+        results: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis5, srs)
+        tb = time.time()
+        stats = summarize_instrumentation_data([result[0] for result in results])
+        all_results5 = [result[1] for result in results if result[1]]
+
     results5: schedule_results_t = aggregate_schedule_results(all_results5)
     print(
-        f"Found {len(results5[1])} admissible and {len(results5[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios5)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios5)} scenarios.\n"
+        f"Found {len(results5[1])} admissible and {len(results5[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios5)} combinations"
+        f" generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios5)} scenarios.\n"
         f"Total time {tb-ta} seconds running on {cpu_info_message}\n"
+        f"{stats.stats()}"
     )
 
     f = open("space_mission/results5.data", "wb")
@@ -69,13 +86,27 @@ if run20:
 
     srs = [(scenario, req) for scenario in scenarios20 for req in scaled_op_sample]
 
-    ta = time.time()
-    all_results20: List[schedule_result_t] = p_umap(schedulability_analysis20, srs)
-    tb = time.time()
+    if K > 1:
+        grouped_srs = [tuple(srs[i:i + K]) for i in range(0, len(srs), K)]
+        ta = time.time()
+        results: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
+        tb = time.time()
+        flat_results = [result for group in results for result in group]
+        stats = summarize_instrumentation_data([result[0] for result in flat_results])
+        all_results20 = [result[1] for result in flat_results if result[1]]
+    else:
+        ta = time.time()
+        results: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis20, srs)
+        tb = time.time()
+        stats = summarize_instrumentation_data([result[0] for result in results])
+        all_results20 = [result[1] for result in results if result[1]]
+
     results20: schedule_results_t = aggregate_schedule_results(all_results20)
     print(
-        f"Found {len(results20[1])} admissible and {len(results20[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios20)} combinations generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios20)} scenarios.\n"
+        f"Found {len(results20[1])} admissible and {len(results20[0])} non-admissible schedules out of {len(scaled_op_sample)*len(scenarios20)} combinations"
+        f" generated from {len(scaled_op_sample)} variations of operational requirements for each of the {len(scenarios20)} scenarios.\n"
         f"Total time {tb-ta} seconds running on {cpu_info_message}\n"
+        f"{stats.stats()}"
     )
 
     f = open("space_mission/results20.data", "wb")

@@ -1,9 +1,10 @@
 from pacti.terms.polyhedra import *
+from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import functools
 import numpy as np
 from contract_utils import *
 from generators import *
-from typing import List, Tuple
+from typing import Tuple
 
 
 def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
@@ -66,15 +67,17 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
 
 def schedulability_analysis5(
     scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray]
-) -> schedule_result_t:
+) -> Tuple[PactiInstrumentationData, schedule_result_t]:
     scenario = scenario_reqs[0]
     reqs = scenario_reqs[1]
     op_reqs: named_contracts_t = make_op_requirement_constraints5(reqs)
     result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
     if isinstance(result, PolyhedralContract):
-        return Schedule(scenario=scenario[0], reqs=reqs, contract=result)
-    return result
+        return PactiInstrumentationData().update_counts(), Schedule(scenario=scenario[0], reqs=reqs, contract=result)
+    return PactiInstrumentationData().update_counts(), result
 
+def schedulability_analysis5_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
+    return [schedulability_analysis5(sample) for sample in samples_group]
 
 def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
     cs1: named_contracts_t = [
@@ -202,11 +205,15 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
 
 def schedulability_analysis20(
     scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray]
-) -> schedule_result_t:
+) -> Tuple[PactiInstrumentationData, schedule_result_t]:
     scenario = scenario_reqs[0]
     reqs = scenario_reqs[1]
     op_reqs: named_contracts_t = make_op_requirement_constraints20(reqs)
     result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
     if isinstance(result, PolyhedralContract):
-        return Schedule(scenario=scenario[0], reqs=reqs, contract=result)
-    return result
+        return PactiInstrumentationData().update_counts(), Schedule(scenario=scenario[0], reqs=reqs, contract=result)
+    return PactiInstrumentationData().update_counts(), result
+
+
+def schedulability_analysis20_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
+    return [schedulability_analysis20(sample) for sample in samples_group]

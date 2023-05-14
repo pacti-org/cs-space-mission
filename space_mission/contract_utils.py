@@ -2,10 +2,12 @@
 from pacti.terms.polyhedra import PolyhedralContract
 
 from pacti import write_contracts_to_file
+from pacti.iocontract import Var
 from typing import Optional, List, Tuple, Union
 from dataclasses import dataclass
 import numpy as np
 import pathlib
+import operator
 
 from cpuinfo import get_cpu_info
 cpu_info = get_cpu_info()
@@ -49,6 +51,15 @@ def check_tuple(t: tuple2) -> tuple2float:
         b = t[1]
     return (a, b)
 
+def output_bounds(c: PolyhedralContract) -> List[str]:
+    bounds=[]
+    for v in sorted(c.outputvars, key=operator.attrgetter('name')):
+        try:
+            b = c.get_variable_bounds(v.name)
+            bounds.append(f"{v.name} in [{b[0]},{b[1]}]")
+        except ValueError:
+            bounds.append(f"{v.name} is unsatisfiable")
+    return bounds
 
 def nochange_contract(s: int, name: str) -> PolyhedralContract:
     """
