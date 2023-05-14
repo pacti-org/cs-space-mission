@@ -9,19 +9,10 @@ authors = [{name = "name", email = "email"}]
 license = "BSD-3-Clause"
 dynamic = ["version"]
 dependencies = [
-    "p-tqdm>=1.4.0",
-    "joblib>=1.2.0",
-    "Pacti @ git+https://github.com/pacti-org/pacti.git@cbc598d",
-    "py-cpuinfo>=9.0.0",
-    "ipympl>=0.9.3",
+    "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@78c2a4c",
+    "pandas>=2.0.1",
 ]
 requires-python = ">=3.11,<3.12"
-
-[project.scripts]
-#pacti = "pacti.cli:main"
-
-[project.optional-dependencies]
-
 
 [tool.pdm.dev-dependencies]
 duty = ["duty>=0.7"]

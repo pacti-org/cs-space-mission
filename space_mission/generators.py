@@ -1,4 +1,5 @@
 from pacti.terms.polyhedra import *
+from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import numpy as np
 from contract_utils import *
 
@@ -490,14 +491,14 @@ def make_scenario(
     return (ranges, scenario_pwr.merge(scenario_sci).merge(scenario_nav))
 
 
-def generate_5step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[List[tuple2float], PolyhedralContract]:
-    return make_scenario(1, mean_dev[0], mean_dev[1], True)
+def generate_5step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
+    return (PactiInstrumentationData().update_counts(),) + make_scenario(1, mean_dev[0], mean_dev[1], True)
 
 
 all_variables = power_variables + science_variables + navigation_variables
 
 
-def generate_20step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[List[tuple2float], PolyhedralContract]:
+def generate_20step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
     global nb_compose
     nb_compose += 3  # scenario_sequence
 
@@ -515,4 +516,4 @@ def generate_20step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[L
         l123 = scenario_sequence(c1=l12, c2=l3, variables=all_variables, c1index=10)
         l1234 = scenario_sequence(c1=l123, c2=l4, variables=all_variables, c1index=15)
 
-    return (ranges, l1234)
+    return (PactiInstrumentationData().update_counts(), ranges, l1234)
