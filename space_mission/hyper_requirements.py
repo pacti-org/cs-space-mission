@@ -16,17 +16,19 @@ run20 = True
 
 op_l_bounds = [
     90.0,  # power: low range of initial soc
-    5.0,  # power: low range of exit soc at each step
-    5.0,  # alloc: low range of delta t
+    5.0,   # power: low range of exit soc at each step
+    5.0,   # alloc: low range of delta t
     60.0,  # sci: low range of d
     40.0,  # nav: low range of u
+    60.0,  # nav: low range of r
 ]
 op_u_bounds = [
     100.0,  # power: high range of initial soc
-    30.0,  # power: low range of exit soc at each step
+    30.0,   # power: low range of exit soc at each step
     100.0,  # alloc: high range of delta t
     100.0,  # sci: high range of  d
-    90.0,  # nav: high range of  u
+    90.0,   # nav: high range of  u
+    100.0,  # nav: high range of r
 ]
 
 # Now, let's apply the Latin hypercube generator to sample the requirement hyperparameters.
@@ -54,17 +56,17 @@ if run5:
     if K > 1:
         grouped_srs = [tuple(srs[i:i + K]) for i in range(0, len(srs), K)]
         ta = time.time()
-        results: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
+        results_5g: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
         tb = time.time()
-        flat_results = [result for group in results for result in group]
+        flat_results = [result for group in results_5g for result in group]
         stats = summarize_instrumentation_data([result[0] for result in flat_results])
         all_results5 = [result[1] for result in flat_results if result[1]]
     else:
         ta = time.time()
-        results: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis5, srs)
+        results_5ng: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis5, srs)
         tb = time.time()
-        stats = summarize_instrumentation_data([result[0] for result in results])
-        all_results5 = [result[1] for result in results if result[1]]
+        stats = summarize_instrumentation_data([result[0] for result in results_5ng])
+        all_results5 = [result[1] for result in results_5ng if result[1]]
 
     results5: schedule_results_t = aggregate_schedule_results(all_results5)
     print(
@@ -89,17 +91,17 @@ if run20:
     if K > 1:
         grouped_srs = [tuple(srs[i:i + K]) for i in range(0, len(srs), K)]
         ta = time.time()
-        results: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
+        results_20g: List[List[Tuple[PactiInstrumentationData, schedule_result_t]]] = p_umap(schedulability_analysis5_grouped, grouped_srs)
         tb = time.time()
-        flat_results = [result for group in results for result in group]
+        flat_results = [result for group in results_20g for result in group]
         stats = summarize_instrumentation_data([result[0] for result in flat_results])
         all_results20 = [result[1] for result in flat_results if result[1]]
     else:
         ta = time.time()
-        results: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis20, srs)
+        results_20ng: List[Tuple[PactiInstrumentationData, schedule_result_t]] = p_umap(schedulability_analysis20, srs)
         tb = time.time()
-        stats = summarize_instrumentation_data([result[0] for result in results])
-        all_results20 = [result[1] for result in results if result[1]]
+        stats = summarize_instrumentation_data([result[0] for result in results_20ng])
+        all_results20 = [result[1] for result in results_20ng if result[1]]
 
     results20: schedule_results_t = aggregate_schedule_results(all_results20)
     print(

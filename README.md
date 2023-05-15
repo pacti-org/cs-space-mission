@@ -41,14 +41,35 @@ Note: this repository is included in the [pacti doc](https://github.com/pacti-or
 
 ```
 (cs-space-mission1-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission1$ /opt/local/github.pacti-org/cs-space-mission1/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission1/space_mission/hyper_scenarios.py
-100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:17<00:00, 11.38it/s]
-Generated 200 hyperparameter variations of the 5-step scenario in 17.717931509017944 seconds.
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:15<00:00, 12.82it/s]
+<class 'list'>
+<class 'pacti.terms.polyhedra.polyhedral_contract.PolyhedralContract'>
+Generated 200 hyperparameter variations of the 5-step scenario in 15.751834154129028 seconds.
 Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
-Total count of Pacti operations for each 5-step scenario: 23 contracts, 12 compositions, and 10 merges.
-100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:04<00:00,  1.08it/s]
-Generated 200 hyperparameter variations of the 20-step scenario in 184.4959750175476 seconds.
+Pacti compose,quotient,merge statistics:
+compose invocation counts: (min: 0, max: 12, avg: 10.08, total: 2016)
+min/max compose contract size: (constraints: 6, variables: 3)/(constraints: 22, variables: 12)
+no quotient operations
+merge invocation counts: (min: 0, max: 10, avg: 8.4, total: 1680)
+min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 45, variables: 23)
+Pacti PolyhedralTermList statistics:
+no contains_behavior operations
+Pacti PolyhedralCompoundContract statistics:
+no compound_merge operations
+
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [02:52<00:00,  1.16it/s]
+Generated 200 hyperparameter variations of the 20-step scenario in 172.59228324890137 seconds.
 Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
-Total count of Pacti operations for each 5-step scenario: 115 contracts, 63 compositions, and 50 merges.
+Pacti compose,quotient,merge statistics:
+compose invocation counts: (min: 51, max: 51, avg: 51.0, total: 10200)
+min/max compose contract size: (constraints: 6, variables: 3)/(constraints: 185, variables: 95)
+no quotient operations
+merge invocation counts: (min: 40, max: 40, avg: 40.0, total: 8000)
+min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 45, variables: 23)
+Pacti PolyhedralTermList statistics:
+no contains_behavior operations
+Pacti PolyhedralCompoundContract statistics:
+no compound_merge operations
 ```
 
 ### Operational Requirement Verification

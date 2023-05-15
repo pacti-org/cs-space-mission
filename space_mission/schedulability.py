@@ -15,7 +15,10 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
                 PolyhedralContract.merge,
                 [
                     PolyhedralContract.from_string(
-                        input_vars=[var], output_vars=[], assumptions=[f"-{var} <= -{reqs[2]}"], guarantees=[]
+                        input_vars=[var],
+                        output_vars=[], 
+                        assumptions=[f"{var} >= {reqs[2]}"], 
+                        guarantees=[]
                     )
                     for var in [
                         "duration_dsn1",
@@ -35,11 +38,11 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
                 input_vars=["soc1_entry", "c1_entry", "d1_entry", "u1_entry", "r1_entry"],
                 output_vars=[],
                 assumptions=[
-                    f"-soc1_entry <= -{reqs[0]}",
+                    f"soc1_entry = {reqs[0]}",
                     f"c1_entry = 0",
-                    f"d1_entry={reqs[3]}",
-                    f"u1_entry={reqs[4]}",
-                    f"r1_entry = 100",
+                    f"d1_entry = {reqs[3]}",
+                    f"u1_entry = {reqs[4]}",
+                    f"r1_entry = {reqs[5]}",
                 ],
                 guarantees=[],
             ),
@@ -55,7 +58,7 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
-                        guarantees=[f"-output_soc{i} <= -{reqs[1]}"],
+                        guarantees=[f"output_soc{i} >= {reqs[1]}"],
                     )
                     for i in range(1, 6)
                 ],
@@ -87,7 +90,10 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                 PolyhedralContract.merge,
                 [
                     PolyhedralContract.from_string(
-                        input_vars=[var], output_vars=[], assumptions=[f"-{var} <= -{reqs[2]}"], guarantees=[]
+                        input_vars=[var],
+                        output_vars=[], 
+                        assumptions=[f"{var} >= {reqs[2]}"], 
+                        guarantees=[]
                     )
                     for var in [
                         "duration_dsn1",
@@ -122,11 +128,11 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                 input_vars=["soc1_entry", "c1_entry", "d1_entry", "u1_entry", "r1_entry"],
                 output_vars=[],
                 assumptions=[
-                    f"soc1_entry >= {reqs[0]}",
+                    f"soc1_entry = {reqs[0]}",
                     f"c1_entry = 0",
-                    f"d1_entry={reqs[3]}",
-                    f"u1_entry={reqs[4]}",
-                    f"r1_entry = 100",
+                    f"d1_entry = {reqs[3]}",
+                    f"u1_entry = {reqs[4]}",
+                    f"r1_entry = {reqs[5]}",
                 ],
                 guarantees=[],
             ),
@@ -142,7 +148,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
-                        guarantees=[f"-output_soc{i} <= -{reqs[1]}"],
+                        guarantees=[f"output_soc{i} >= {reqs[1]}"],
                     )
                     for i in range(1, 6)
                 ],
@@ -159,7 +165,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
-                        guarantees=[f"-output_soc{i} <= -{reqs[1]}"],
+                        guarantees=[f"output_soc{i} >= {reqs[1]}"],
                     )
                     for i in range(5, 11)
                 ],
@@ -176,7 +182,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
-                        guarantees=[f"-output_soc{i} <= -{reqs[1]}"],
+                        guarantees=[f"output_soc{i} >= {reqs[1]}"],
                     )
                     for i in range(10, 16)
                 ],
@@ -193,7 +199,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
-                        guarantees=[f"-output_soc{i} <= -{reqs[1]}"],
+                        guarantees=[f"output_soc{i} >= {reqs[1]}"],
                     )
                     for i in range(15, 21)
                 ],
