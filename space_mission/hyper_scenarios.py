@@ -1,6 +1,6 @@
 import time
 from pacti.terms.polyhedra import *
-import os
+from pacti_instrumentation.pacti_counters import summarize_instrumentation_data
 import numpy as np
 from contract_utils import *
 from generators import *
@@ -21,31 +21,31 @@ run20 = True
 # Hyperparameter ranges
 l_bounds = [
     2.0,  # power: min dns cons
-    2.5,  # power: min chrg gen
-    0.3,  # power: min sbo cons
+    3.0,  # power: min chrg gen
+    0.1,  # power: min sbo cons
     0.2,  # power: min tcm_h cons
     0.1,  # power: min tcm_dv cons
-    5.0,  # science: min dsn speed
+    0.3,  # science: min dsn speed
     2.0,  # science: min sbo gen
     1.0,  # nav: min dsn noise
-    1.0,  # nav: min chrg noise
-    0.5,  # nav: min sbo imp
-    1.2,  # nav: min tcm_dv noise
+    0.8,  # nav: min chrg noise
+    0.3,  # nav: min sbo imp
+    1.0,  # nav: min tcm_dv noise
     0.3,  # nav: min tcm_dv progress
 ]
 u_bounds = [
-    2.2,  # power: max dns cons
-    3.5,  # power: max chrg gen
+    2.5,  # power: max dns cons
+    6.0,  # power: max chrg gen
     0.4,  # power: max sbo cons
-    0.3,  # power: max tcm_h cons
-    0.2,  # power: max tcm_dv cons
-    6.0,  # science: max dsn speed
-    8.0,  # science: max sbo gen
-    1.2,  # nav: max dsn noise
-    1.2,  # nav: max chrg noise
+    1.0,  # power: max tcm_h cons
+    0.4,  # power: max tcm_dv cons
+    0.7,  # science: max dsn speed
+    5.0,  # science: max sbo gen
+    1.5,  # nav: max dsn noise
+    1.5,  # nav: max chrg noise
     0.8,  # nav: max sbo imp
-    1.4,  # nav: max tcm_dv noise
-    0.5,  # nav: max tcm_dv progress
+    2.0,  # nav: max tcm_dv noise
+    0.8,  # nav: max tcm_dv progress
 ]
 
 mean_sampler = qmc.LatinHypercube(d=len(l_bounds))
@@ -60,13 +60,15 @@ if run5:
     nb_5step_operations = OperationCounts(contracts=23, compositions=12, merges=10)
 
     ta = time.time()
-    scenarios5: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(generate_5step_scenario, list(zip(scaled_mean_sample5, dev_sample5)))
+    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]] = p_umap(generate_5step_scenario, list(zip(scaled_mean_sample5, dev_sample5)))
     tb = time.time()
 
+    stats = summarize_instrumentation_data([result[0] for result in results])
+    scenarios5 = [result[1:3] for result in results if result[1]]
     print(
-        f"Generated {n5} hyperparameter variations of the 5-step scenario in {tb-ta} seconds.\n"
+        f"Generated {len(scenarios5)} hyperparameter variations of the 5-step scenario in {tb-ta} seconds.\n"
         f"Running on {cpu_info_message}\n"
-        f"Total count of Pacti operations for each 5-step scenario: {nb_5step_operations}."
+        f"{stats.stats()}"
     )
     s = open("space_mission/scenarios5.data", "wb")
     pickle.dump(scenarios5, s)
@@ -83,13 +85,15 @@ if run20:
     nb_20step_operations = OperationCounts(contracts=115, compositions=63, merges=50)
 
     ta = time.time()
-    scenarios20: List[Tuple[List[tuple2float], PolyhedralContract]] = p_umap(generate_20step_scenario, list(zip(scaled_mean_sample20, dev_sample20)))
+    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]] = p_umap(generate_20step_scenario, list(zip(scaled_mean_sample20, dev_sample20)))
     tb = time.time()
 
+    stats = summarize_instrumentation_data([result[0] for result in results])
+    scenarios20 = [result[1:3] for result in results if result[1]]
     print(
-        f"Generated {n20} hyperparameter variations of the 20-step scenario in {tb-ta} seconds.\n"
+        f"Generated {len(scenarios20)} hyperparameter variations of the 20-step scenario in {tb-ta} seconds.\n"
         f"Running on {cpu_info_message}\n"
-        f"Total count of Pacti operations for each 5-step scenario: {nb_20step_operations}."
+        f"{stats.stats()}"
     )
     s = open("space_mission/scenarios20.data", "wb")
     pickle.dump(scenarios20, s)

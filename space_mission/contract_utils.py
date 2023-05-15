@@ -161,6 +161,7 @@ contract_names_t = List[str]
 
 @dataclass(frozen=True)
 class FailedMerges:
+    current: PolyhedralContract
     merged: contract_names_t
     failed_name: str
     failed_contract: PolyhedralContract
@@ -181,7 +182,7 @@ def perform_merges_seq(c: PolyhedralContract, c_seq: named_contracts_t) -> merge
             current = current.merge(cc)
             names.append(cn)
         except ValueError:
-            return FailedMerges(names, cn, cc)
+            return FailedMerges(current, names, cn, cc)
     return current
 
 
