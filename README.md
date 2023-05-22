@@ -35,6 +35,19 @@ Note: this repository is included in the [pacti doc](https://github.com/pacti-or
 
 - Leave the `name`, `version`, and `description` empty so that pdm will not treat this project as a package.
 
+## Running the notebooks
+
+### Individual viewpoint modeling
+
+- [./space_mission/space_mission_power.ipynb](./space_mission/space_mission_power.ipynb)
+- [./space_mission/space_mission_navigation.ipynb](./space_mission/space_mission_navigation.ipynb)
+- [./space_mission/space_mission_science.ipynb](./space_mission/space_mission_science.ipynb)
+- [./space_mission/space_mission_thermal.ipynb](./space_mission/space_mission_thermal.ipynb)
+
+### Combining Power, Navigation, and Science
+
+- [./space_mission/space_mission_3viewpoints.ipynb](./space_mission/space_mission_3viewpoints.ipynb)
+
 ## Performance results
 
 ### Scenario generation

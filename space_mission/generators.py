@@ -1,4 +1,4 @@
-from pacti.terms.polyhedra import *
+from pacti.terms.polyhedra import PolyhedralContract
 from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import numpy as np
 from contract_utils import *
@@ -195,7 +195,7 @@ def SBO_science_storage(s: int, generation: tuple[float, float]) -> PolyhedralCo
         ],
         guarantees=[
             # The increase in data, d{exit} - d{entry}, has a lower/upper bound as the min/max generation rate * duration
-            f"{generation[0]}*duration_sbo{s} <= d{s}_exit - d{s}_entry <= {generation[1]}*duration_sbo{s} <= 0",
+            f"{generation[0]}*duration_sbo{s} <= d{s}_exit - d{s}_entry <= {generation[1]}*duration_sbo{s}",
             # Data volume cannot exceed the available storage capacity
             f"d{s}_exit <= 100",
         ],
@@ -221,9 +221,6 @@ def SBO_science_comulative(s: int, generation: tuple[float, float]) -> Polyhedra
             f"c{s}_entry >= 0",
         ],
         guarantees=[
-            # cumulative data lower bound
-            # NFR
-            # f"-c{s}_exit <= 0",
             # The increase in cummulated data, c{exit} - c{entry}, has a lower/upper bound as the min/max generation rate * duration
             f"{generation[0]}*duration_sbo{s} <= c{s}_exit - c{s}_entry <= {generation[1]}*duration_sbo{s}",
         ],

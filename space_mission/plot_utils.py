@@ -6,6 +6,7 @@ from pacti.iocontract import Var
 from pacti.terms.polyhedra import PolyhedralContract, PolyhedralTermList
 from pacti.terms.polyhedra.plots import plot_guarantees
 from typing import Dict, List, Tuple, Union
+from contract_utils import bound
 
 numeric = Union[int, float]
 
@@ -81,12 +82,19 @@ def plot_steps(
 
     return fig
 
-def get_bounds(ptl: PolyhedralTermList, var: str) -> tuple[float, float]:
-    min = ptl.optimize(objective={Var(var): 1}, maximize=False)
-    max = ptl.optimize(objective={Var(var): 1}, maximize=True)
+def get_bounds(ptl: PolyhedralTermList, var: str) -> tuple[str, str]:
+    try:
+        min = f"{ptl.optimize(objective={Var(var): 1}, maximize=False):.2f}"
+    except ValueError:
+        min = "unknown"
+    try:
+        max = f"{ptl.optimize(objective={Var(var): 1}, maximize=True):.2f}"
+    except ValueError:
+        max = "unknown"
+
     return min, max
 
-def calculate_output_bounds_for_input_value(ptl: PolyhedralTermList, inputs: Dict[Var, float], output: Var) -> tuple[float,float]:
+def calculate_output_bounds_for_input_value(ptl: PolyhedralTermList, inputs: Dict[Var, float], output: Var) -> tuple[str,str]:
     return get_bounds(ptl.evaluate(inputs).simplify(), output.name)
 
 # Add a callback function for the mouse click event
@@ -95,7 +103,7 @@ def on_hover(ptl: PolyhedralTermList, x_var: Var, y_var: Var, fig: Figure, ax: A
         x_coord = event.xdata
         try:
             y_min, y_max = calculate_output_bounds_for_input_value(ptl, {x_var: x_coord}, y_var)
-            ax.set_title(f"@ {x_var.name}={x_coord:.2f}\n{y_min:.2f} <= {y_var.name} <= {y_max:.2f}")
+            ax.set_title(f"@ {x_var.name}={x_coord:.2f}\n{y_min} <= {y_var.name} <= {y_max}")
         except ValueError as e:
             print(f"Contract guarantee hover ValueError:\n{e}")
             ax.set_title(f"@ {x_var.name}={x_coord:.2f}\nValueError (see message below)")

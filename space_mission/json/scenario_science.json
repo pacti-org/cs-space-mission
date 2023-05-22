@@ -23,15 +23,15 @@
       ],
       "assumptions": [
         "-duration_sbo3 <= 0",
-        "d1_entry - 5.2 duration_dsn1 + 4 duration_sbo3 <= 100",
+        "d1_entry - 0.3 duration_dsn1 + 4 duration_sbo3 <= 100",
         "-duration_dsn1 <= 0",
         "-d1_entry <= 0",
         "d1_entry <= 100",
         "-c1_entry <= 0"
       ],
       "guarantees": [
-        "-d1_entry + 5.2 duration_dsn1 + output_d1 <= 0",
-        "d1_entry - 5.5 duration_dsn1 - output_d1 <= 0",
+        "-d1_entry + 0.3 duration_dsn1 + output_d1 <= 0",
+        "d1_entry - 0.5 duration_dsn1 - output_d1 <= 0",
         "-output_d1 <= 0",
         "-c1_entry + output_c1 = 0",
         "-output_d1 + output_d2 = 0",
@@ -71,15 +71,15 @@
       ],
       "assumptions": [
         "-duration_sbo3 <= 0",
-        "d1_entry - 5.2 duration_dsn1 + 4 duration_sbo3 <= 100",
+        "d1_entry - 0.3 duration_dsn1 + 4 duration_sbo3 <= 100",
         "-duration_dsn1 <= 0",
         "-d1_entry <= 0",
         "d1_entry <= 100",
         "-c1_entry <= 0"
       ],
       "guarantees": [
-        "-d1_entry + 5.2 duration_dsn1 + output_d1 <= 0",
-        "d1_entry - 5.5 duration_dsn1 - output_d1 <= 0",
+        "-d1_entry + 0.3 duration_dsn1 + output_d1 <= 0",
+        "d1_entry - 0.5 duration_dsn1 - output_d1 <= 0",
         "-output_d1 <= 0",
         "-c1_entry + output_c1 = 0",
         "-output_d1 + output_d2 = 0",
