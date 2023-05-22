@@ -1,4 +1,4 @@
-from pacti.terms.polyhedra import *
+from pacti.terms.polyhedra import PolyhedralContract
 from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import functools
 import numpy as np

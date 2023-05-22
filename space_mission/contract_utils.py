@@ -52,36 +52,31 @@ def check_tuple(t: tuple2) -> tuple2float:
     return (a, b)
 
 
+def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
+    try:
+        b = c.get_variable_bounds(var)
+        if isinstance(b[0], float):
+            low = f"{b[0]:.2f}"
+        else:
+            low = "None"
+        if isinstance(b[1], float):
+            high = f"{b[1]:.2f}"
+        else:
+            high = "None"
+        return low, high
+    except ValueError:
+        return "unknown", "unknown"
+
 def bounds(c: PolyhedralContract) -> List[str]:
     bounds=[]
     for v in sorted(c.inputvars, key=operator.attrgetter('name')):
-        try:
-            b = c.get_variable_bounds(v.name)
-            if b[0]:
-                low = f"{b[0]:.2f}"
-            else:
-                low = "None"
-            if b[1]:
-                high = f"{b[1]:.2f}"
-            else:
-                high = "None"
-            bounds.append(f" input {v.name} in [{low},{high}]")
-        except ValueError:
-            bounds.append(f" input {v.name} is unsatisfiable")
+        low, high = bound(c, v.name)
+        bounds.append(f" input {v.name} in [{low},{high}]")
+
     for v in sorted(c.outputvars, key=operator.attrgetter('name')):
-        try:
-            b = c.get_variable_bounds(v.name)
-            if b[0]:
-                low = f"{b[0]:.2f}"
-            else:
-                low = "None"
-            if b[1]:
-                high = f"{b[1]:.2f}"
-            else:
-                high = "None"
-            bounds.append(f"output {v.name} in [{low},{high}]")
-        except ValueError:
-            bounds.append(f"output {v.name} is unsatisfiable")
+        low, high = bound(c, v.name)
+        bounds.append(f"output {v.name} in [{low},{high}]")
+
     return bounds
 
 
@@ -104,6 +99,8 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
         ],
         guarantees=[
             f"{name}{s}_exit = {name}{s}_entry",
+            # This poses problems w/ simplifications.
+            # f"| {name}{s}_exit - {name}{s}_entry | <= 0.0001",
         ],
     )
 
