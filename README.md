@@ -52,33 +52,31 @@ Note: this repository is included in the [pacti doc](https://github.com/pacti-or
 
 ### Scenario generation
 
-```
+```text
 (cs-space-mission1-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission1$ /opt/local/github.pacti-org/cs-space-mission1/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission1/space_mission/hyper_scenarios.py
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:15<00:00, 12.82it/s]
-<class 'list'>
-<class 'pacti.terms.polyhedra.polyhedral_contract.PolyhedralContract'>
-Generated 200 hyperparameter variations of the 5-step scenario in 15.751834154129028 seconds.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:09<00:00, 10.84it/s]
+Generated 100 hyperparameter variations of the 5-step scenario in 9.372139930725098 seconds.
 Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
 Pacti compose,quotient,merge statistics:
-compose invocation counts: (min: 0, max: 12, avg: 10.08, total: 2016)
+compose invocation counts: (min: 0, max: 12, avg: 8.16, total: 816)
 min/max compose contract size: (constraints: 6, variables: 3)/(constraints: 22, variables: 12)
 no quotient operations
-merge invocation counts: (min: 0, max: 10, avg: 8.4, total: 1680)
-min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 45, variables: 23)
+merge invocation counts: (min: 0, max: 10, avg: 6.8, total: 680)
+min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 44, variables: 23)
 Pacti PolyhedralTermList statistics:
 no contains_behavior operations
 Pacti PolyhedralCompoundContract statistics:
 no compound_merge operations
 
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [02:52<00:00,  1.16it/s]
-Generated 200 hyperparameter variations of the 20-step scenario in 172.59228324890137 seconds.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [01:37<00:00,  1.02it/s]
+Generated 100 hyperparameter variations of the 20-step scenario in 97.78417682647705 seconds.
 Running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
 Pacti compose,quotient,merge statistics:
-compose invocation counts: (min: 51, max: 51, avg: 51.0, total: 10200)
-min/max compose contract size: (constraints: 6, variables: 3)/(constraints: 185, variables: 95)
+compose invocation counts: (min: 51, max: 51, avg: 51.0, total: 5100)
+min/max compose contract size: (constraints: 6, variables: 3)/(constraints: 187, variables: 95)
 no quotient operations
-merge invocation counts: (min: 40, max: 40, avg: 40.0, total: 8000)
-min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 45, variables: 23)
+merge invocation counts: (min: 40, max: 40, avg: 40.0, total: 4000)
+min/max merge contract size: (constraints: 3, variables: 2)/(constraints: 44, variables: 23)
 Pacti PolyhedralTermList statistics:
 no contains_behavior operations
 Pacti PolyhedralCompoundContract statistics:
@@ -87,27 +85,31 @@ no compound_merge operations
 
 ### Operational Requirement Verification
 
-
-With 30 operational requirement variations:
-
-```
-(cs-space-mission-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission$ /opt/local/github.pacti-org/cs-space-mission/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission/space_mission/hyper_requirements.py100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [00:28<00:00, 213.60it/s]
-Found 141 admissible and 5859 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
-Total time 28.221071243286133 seconds.
-100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6000/6000 [01:12<00:00, 82.63it/s]
-Found 72 admissible and 5928 non-admissible schedules out of 6000 combinations generated from 30 variations of operational requirements for each of the 200 scenarios.
-Total time 72.75603914260864 seconds.
-```
-
-With 300 operational requirement variations:
-
-```
+```text
 (cs-space-mission1-3.11) nfr@nfr-desktop:/opt/local/github.pacti-org/cs-space-mission1$ /opt/local/github.pacti-org/cs-space-mission1/.venv/bin/python /opt/local/github.pacti-org/cs-space-mission1/space_mission/hyper_requirements.py
-100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [05:00<00:00, 199.90it/s]
-Found 0 admissible and 60000 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
-Total time 300.2783877849579 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2000/2000 [00:22<00:00, 87.49it/s]
+Found 70 admissible and 9930 non-admissible schedules out of 10000 combinations generated from 100 variations of operational requirements for each of the 100 scenarios.
+Total time 23.014519691467285 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+Pacti compose,quotient,merge statistics:
+no compose operations
+no quotient operations
+merge invocation counts: (min: 9, max: 11, avg: 9.0543, total: 90543)
+min/max merge contract size: (constraints: 1, variables: 1)/(constraints: 80, variables: 35)
+Pacti PolyhedralTermList statistics:
+no contains_behavior operations
+Pacti PolyhedralCompoundContract statistics:
+no compound_merge operations
 
-100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 60000/60000 [14:08<00:00, 70.71it/s]
-Found 0 admissible and 60000 non-admissible schedules out of 60000 combinations generated from 300 variations of operational requirements for each of the 200 scenarios.
-Total time 849.0543026924133 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2000/2000 [01:11<00:00, 27.83it/s]
+Found 56 admissible and 9944 non-admissible schedules out of 10000 combinations generated from 100 variations of operational requirements for each of the 100 scenarios.
+Total time 72.22614121437073 seconds running on AMD Ryzen Threadripper PRO 3955WX 16-Cores @ 3.8927 GHz with up to 32 threads.
+Pacti compose,quotient,merge statistics:
+no compose operations
+no quotient operations
+merge invocation counts: (min: 9, max: 11, avg: 9.0548, total: 90548)
+min/max merge contract size: (constraints: 1, variables: 1)/(constraints: 255, variables: 125)
+Pacti PolyhedralTermList statistics:
+no contains_behavior operations
+Pacti PolyhedralCompoundContract statistics:
+no compound_merge operations
 ```
