@@ -1,52 +1,105 @@
-# Pacti Space Mission Case Study
+# Space Mission Case Study
 
-Note: this repository is included in the [pacti doc](https://github.com/pacti-org/pacti-docs).
+There are two case studies:
 
+- A simplified specification of the [Mars 2020 Entry-Descent Landing (EDL) scenario](./mars_entry_descent_landing/README.md)
 
-## How was this project created?
+- A simplified spacecraft-small body approach scenario (see below).
 
-- Make sure that [pdm](https://pdm.fming.dev/latest/usage/dependency/) is installed.
+  This case study is based on the following paper:
 
-- Make sure that [gh](https://cli.github.com/manual/installation) is installed.
+  I. A. Nesnas, B. J. Hockman, S. Bandopadhyay, B. J. Morrell, D. P.
+  Lubey, J. Villa, D. S. Bayard, A. Osmundson, B. Jarvis, M. Bersani,
+  et al., “Autonomous exploration of small bodies toward greater autonomy
+  for deep space missions,” Frontiers in Robotics and AI, p. 270, 2021.
 
-  This CLI handles authentication for github repositories, e.g.:
+## Specifications for the system-level tasks for the spacecraft-small body approach scenario
 
-  ```shell
-  gh repo clone pacti-org/cs-space-mission
-  ```
+The specifications were developed in two phases.
 
-- Setup the `pdm` repo:
+### Phase 1: Exploration with notebooks
 
-  ```shell
-  pdm init
-  ```
+These notebooks focus on explaining the system task specifications and on analyzing their characteristics.
 
-  Note: Make sure the python requirement is compatible with those of [pacti](https://github.com/pacti-org/pacti). This case study requires Python 3.11 given that there are [significant performance improvements in Python 3.11 compared to earlier versions](https://stackify.com/20-simple-python-performance-tuning-tips/).
+- Tasks from the power viewpoint perspective:
 
-  ```toml
-  requires-python = ">=3.11,<3.12"
-  ```
+  See [./space_mission/space_mission_power.ipynb](./space_mission/space_mission_power.ipynb)
 
-- Add a dependency on pacti:
+- Tasks from the science viewpoint perspective:
 
-  ```shell
-  pdm add "git+https://github.com/pacti-org/pacti.git"
-  ```
+  See [./space_mission/space_mission_science.ipynb](./space_mission/space_mission_science.ipynb)
 
-- Leave the `name`, `version`, and `description` empty so that pdm will not treat this project as a package.
+- Tasks from the navigation perspective:
 
-## Running the notebooks
+  See [./space_mission/space_mission_navigation.ipynb](./space_mission/space_mission_navigation.ipynb)
 
-### Individual viewpoint modeling
+- Tasks from the thermal perspective:
 
-- [./space_mission/space_mission_power.ipynb](./space_mission/space_mission_power.ipynb)
-- [./space_mission/space_mission_navigation.ipynb](./space_mission/space_mission_navigation.ipynb)
-- [./space_mission/space_mission_science.ipynb](./space_mission/space_mission_science.ipynb)
-- [./space_mission/space_mission_thermal.ipynb](./space_mission/space_mission_thermal.ipynb)
+  See [./space_mission/space_mission_thermal.ipynb](./space_mission/space_mission_thermal.ipynb)
 
-### Combining Power, Navigation, and Science
+- Fusing viewpoints (power, science, navigation):
 
-- [./space_mission/space_mission_3viewpoints.ipynb](./space_mission/space_mission_3viewpoints.ipynb)
+  See [./space_mission/space_mission_3viewpoints.ipynb](./space_mission/space_mission_3viewpoints.ipynb)
+
+### Phase 2: Design and operational requirement exploration
+
+Instead of specifying and analyzing a point design, the idea is to vary
+the design and operational parameters.
+
+#### Parametric design generation
+
+The following Python functions use the Pacti contract algebra for  
+generating task scenario designs from variable hyperparameters.
+
+See [./space_mission/generators.py](./space_mission/generators.py)
+
+The following notebooks demonstrate design generation with an interactive chart of CPU utilization
+to assess the efficiency of parallelizing the algebraic operations involved.
+
+There are two variants of these notebooks according to the length of the task scenarios generated (5 vs. 20 tasks).
+
+See [./space_mission/analysis_results1-5steps.ipynb](./space_mission/analysis_results1-5steps.ipynb)
+
+See [./space_mission/analysis_results1-20steps.ipynb](./space_mission/analysis_results1-20steps.ipynb)
+
+Alternatively, one can parallelize design generation using a Python script:
+
+See [./space_mission/hyper_scenarios.py](./space_mission/hyper_scenarios.py)
+
+#### Parametric schedulability analysis
+
+The following Python functions use the Pacti contract algebra for
+analyzing a task scenario against operational requirements with variable hyperparameters.
+
+See [./space_mission/schedulability.py](./space_mission/schedulability.py)
+
+The following notebooks demonstrate the schedulability analysis of a task scenario design against
+operational requirements with variable hyperparameters with an interactive chart of CPU utilization
+to assess the efficiency of parallelizing the algebraic operations involved.
+
+There are two variants of these notebooks according to the length of the task scenarios analyzed (5 vs. 20 tasks).
+
+See [./space_mission/schedulability_analysis_5steps.ipynb](./space_mission/schedulability_analysis_5steps.ipynb)
+
+See [./space_mission/schedulability_analysis_20steps.ipynb](./space_mission/schedulability_analysis_20steps.ipynb)
+
+Alternatively, one can parallelize schedulability analysis using a Python script:
+
+See [./space_mission/hyper_requirements.py](./space_mission/hyper_requirements.py)
+
+#### Analyzing bounds on admissible solutions
+
+Some of the 5-step task solutions:
+
+See [./space_mission/analysis_results1-5steps.ipynb](./space_mission/analysis_results1-5steps.ipynb)
+
+Some of the 20-step task solutions:
+
+See [./space_mission/analysis_results1-20steps.ipynb](./space_mission/analysis_results1-20steps.ipynb)
+
+Scatter plots of the 20-step task solutions:
+
+See [./space_mission/analysis_results2.ipynb](./space_mission/analysis_results2.ipynb)
 
 ## Performance results
 
