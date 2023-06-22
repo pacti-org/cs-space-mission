@@ -66,12 +66,20 @@ def CHRG_power(s: int, generation: tuple[float, float]) -> PolyhedralContract:
     # Parameters:
 
 
-# - s: start index of the timeline variables
-# - consumption: (min, max) rate of battery discharge during the task instance
 def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> PolyhedralContract:
+    """A contract for discharging the battery during the task instance.
+
+    Args:
+        s (int): step index
+        task (str): task name
+        consumption (tuple[float, float]): min,max range of battery discharge during the task instance
+
+    Returns:
+        PolyhedralContract: The discharge contract
+    """
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    return PolyhedralContract.from_string(
         input_vars=[
             f"soc{s}_entry",  # initial battery SOC
             f"duration_{task}{s}",  # variable task duration
@@ -90,7 +98,7 @@ def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> Polyh
             f"soc{s}_entry >= {consumption[1]}*duration_{task}{s}",
         ],
         guarantees=[
-            # duration*consumption(min) <= soc{entry} - soc{exit} <= duration*consumption(max)
+            # The state of charge decrease, soc{entry} - soc{exit}, is bounded by the duration * min/max consumption rate
             f"{consumption[0]}*duration_{task}{s} <= soc{s}_entry - soc{s}_exit <= {consumption[1]}*duration_{task}{s}",
             # Battery cannot exceed maximum SOC
             f"soc{s}_exit <= 100",
@@ -98,7 +106,6 @@ def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> Polyh
             f"0 <= soc{s}_exit",
         ],
     )
-    return spec
 
 
 power_variables = ["soc"]
@@ -488,14 +495,18 @@ def make_scenario(
     return (ranges, scenario_pwr.merge(scenario_sci).merge(scenario_nav))
 
 
-def generate_5step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
+def generate_5step_scenario(
+    mean_dev: Tuple[np.ndarray, np.ndarray]
+) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
     return (PactiInstrumentationData().update_counts(),) + make_scenario(1, mean_dev[0], mean_dev[1], True)
 
 
 all_variables = power_variables + science_variables + navigation_variables
 
 
-def generate_20step_scenario(mean_dev: Tuple[np.ndarray, np.ndarray]) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
+def generate_20step_scenario(
+    mean_dev: Tuple[np.ndarray, np.ndarray]
+) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
     global nb_compose
     nb_compose += 3  # scenario_sequence
 

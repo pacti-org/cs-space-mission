@@ -1,5 +1,5 @@
 """Helper module for the space mission case study."""
-from pacti.terms.polyhedra import PolyhedralContract
+from pacti.terms.polyhedra import PolyhedralTerm, PolyhedralTermList, PolyhedralContract
 
 from pacti import write_contracts_to_file
 from pacti.iocontract import Var
@@ -187,3 +187,40 @@ def aggregate_schedule_results(srs: List[schedule_result_t]) -> schedule_results
     f: List[FailedMerges] = sorted([r for r in srs if isinstance(r, FailedMerges)], key=lambda fm: -len(fm.merged))
     s: List[Schedule] = [r for r in srs if isinstance(r, Schedule)]
     return f, s
+
+def polyhedral_term_key(t: PolyhedralTerm) -> str:
+    """
+    Produces a key for sorting a PolyhedralTerm
+
+    Args:
+        t: PolyhedralTerm
+            A term.
+
+    Returns:
+        The term's sorting key as the concatenation of its sorted variable names.
+    """
+    return ",".join(sorted([v.name for v in t.vars]))
+
+def show_contract(c: PolyhedralContract) -> str:
+    """
+    Produces a human-friendly string representation of a PolyhedralContract.
+
+    Args:
+        c: PolyhedralContract
+            A contract.
+
+    Returns:
+        The string representation of the contract based on sorting input and output variables
+        and the assumption and guarantee term lists.
+    """
+    buff = ""
+    inputs = sorted([v.name for v in c.inputvars])
+    buff += "Inputs : [" + ",".join(inputs) + "]\n"
+    outputs = sorted([v.name for v in c.outputvars])
+    buff += "Outputs: [" + ",".join(outputs) + "]\n"
+    a = sorted(c.a.terms, key=polyhedral_term_key)
+    buff += "A: " + "\n\t".join([str(PolyhedralTermList(a))]) + "\n"
+    g = sorted(c.g.terms, key=polyhedral_term_key)
+    buff += "G: " + "\n\t".join([str(PolyhedralTermList(g))]) + "\n"
+
+    return buff
