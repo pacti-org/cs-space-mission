@@ -11,6 +11,7 @@ dynamic = ["version"]
 dependencies = [
     "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@78c2a4c",
     "pandas>=2.0.1",
+    "ipympl>=0.9.3",
 ]
 requires-python = ">=3.11,<3.12"
 
