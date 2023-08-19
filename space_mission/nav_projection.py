@@ -261,101 +261,7 @@ class NAVLoop:
             c1index=step,
         )
 
-
-class NAVLoopUnrolling:
-    """Unroll up to a fixed number of iterations of the navigation feedback loop
-    to determine whether the mission is achievable within that number of iterations."""
-
-    def __init__(
-        self,
-        min_iterations: int,
-        max_iterations: int,
-        mu: float,
-        gain: Tuple[float, float],
-        max_dv: float,
-        me: Tuple[float, float],
-    ) -> None:
-        if not (0 <= min_iterations and min_iterations < max_iterations):
-            raise ValueError(
-                f"min iterations must be greater than zero and less than max iterations; got: {min_iterations=}, {max_iterations=}"
-            )
-
-        # Create a partial function with mu, gain, max_dv and me pre-filled
-        partial_create_NAVLoop = partial(
-            NAVLoopUnrolling.create_NAVLoop, mu=mu, gain=gain, max_dv=max_dv, me=me
-        )
-
-        # Create NAVLoop objects in parallel
-        self.loops: List[NAVLoop] = p_map(partial_create_NAVLoop, range(max_iterations))
-
-        # Create arguments for unroll method
-        args_for_unroll: List[List[Tuple[int, PolyhedralContract]]] = [
-            [(i, loop.steps1234) for i, loop in enumerate(self.loops[: j + 1])]
-            for j in range(min_iterations, max_iterations)
-        ]
-
-        # Parallelized map with progress bar
-        self.sequences: List[Tuple[int, PolyhedralContract]] = list(
-            p_umap(lambda args: self.unroll(args), args_for_unroll)
-        )
-
-    @staticmethod
-    def create_NAVLoop(
-        i: int,
-        mu: float,
-        gain: Tuple[float, float],
-        max_dv: float,
-        me: Tuple[float, float],
-    ) -> NAVLoop:
-        return NAVLoop(step=1 + 4 * i, mu=mu, gain=gain, max_dv=max_dv, me=me)
-
-    @staticmethod
-    def unroll(
-        loops: List[Tuple[int, PolyhedralContract]]
-    ) -> Tuple[int, PolyhedralContract]:
-        return reduce(NAVLoopUnrolling.sequence_compose, reversed(loops))
-
-    @staticmethod
-    def sequence_compose(
-        a: Tuple[int, PolyhedralContract], b: Tuple[int, PolyhedralContract]
-    ) -> Tuple[int, PolyhedralContract]:
-        bindex: int = 4 + 4 * b[0]
-        aindex: int = max(a[0], 4 + bindex)
-        return (
-            aindex,
-            scenario_sequence(
-                c1=b[1], c2=a[1], variables=["t", "trtd", "ttid"], c1index=bindex
-            ),
-        )
-
-    def show_bounds(self, index: int, var: str, title: str, text: str, nth_tick: int) -> Figure:
-        (n, c) = self.sequences[index]
-        print(f"generating bounds plot for a sequence of {n=} steps...")
-        sn = ["initial"]
-        for i in range( n // 4):
-            sn = sn + [f"meas{i}", f"od{i}", f"mdnav{i}", f"tcm{i}"]
-
-        last_bounds: tuple2float = get_numerical_bounds(c=c, var=f"{var}{n}_exit")
-        sb: List[tuple2float] = (
-            [get_numerical_bounds(c=c, var=f"{var}1_entry")]
-            + [
-                get_numerical_bounds(c=c, var=f"output_{var}{i}")
-                for i in range(1, n)
-            ]
-            + [last_bounds]
-        )
-        text = text + f"\n{len(c.inputvars)} input variables\n{len(c.outputvars)} output variables\n{len(c.a.terms)} assumptions\n{len(c.g.terms)} constraints"
-        text = text + f"\n{n} sequence steps\nbounds({var}{n}_exit)=[{last_bounds[0]:.3g},{last_bounds[1]:.3g}]"
-        return plot_steps(
-            step_bounds=sb,
-            step_names=sn,
-            ylabel=var,
-            title=title,
-            text=text,
-            nth_tick=nth_tick
-        )
-
-class NAVScenario:
+class NAVScenarioLinear:
     def __init__(
         self,
         iterations: int,
@@ -372,7 +278,7 @@ class NAVScenario:
         l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
         l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
         current = scenario_sequence(c1=l1.steps1234, c2=l2.steps1234, variables=variables, c1index=4)
-        self.contracts: List[Tuple[int, PolyhedralContract, floa, float]] = []
+        self.contracts: List[Tuple[int, PolyhedralContract, float, float]] = []
         length: int = 2
         for _ in range(iterations):
             length = length+1
@@ -383,4 +289,34 @@ class NAVScenario:
             tc = time.time()
             tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
             self.contracts.append(tuple)
+
+class NAVScenarioGeometric:
+    def __init__(
+        self,
+        iterations: int,
+        mu: float,
+        gain: Tuple[float, float],
+        max_dv: float,
+        me: Tuple[float, float],
+        variables: List[str]
+    ) -> None:
+        if not (0 <= iterations):
+            raise ValueError(
+                f"iterations must be greater than zero; got: {iterations=}"
+            )
+        l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        current = scenario_sequence(c1=l1.steps1234, c2=l2.steps1234, variables=variables, c1index=4)
+        self.contracts: List[Tuple[int, PolyhedralContract, float, float]] = []
+        length: int = 8
+        for i in range(iterations):
+            ta = time.time()
+            current_shift: PolyhedralContract = contract_shift(c=current, offset=length)
+            tb = time.time()
+            current: PolyhedralContract = scenario_sequence(c1=current, c2=current_shift, variables=variables, c1index=length)
+            tc = time.time()
+            tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
+            self.contracts.append(tuple)
+            length = 2 * length
+            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} vars: {len(current.vars)} constraints: {len(current.a.terms)+len(current.g.terms)}")
            
