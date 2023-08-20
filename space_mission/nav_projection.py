@@ -260,6 +260,7 @@ class NAVLoop:
             variables=["error", "t", "trtd", "ttid"],
             c1index=step,
         )
+        self.steps1234.simplify()
 
 class NAVScenarioLinear:
     def __init__(
@@ -286,6 +287,7 @@ class NAVScenarioLinear:
             current_shift: PolyhedralContract = contract_shift(c=current, offset=4)
             tb = time.time()
             current: PolyhedralContract = scenario_sequence(c1=l1.steps1234, c2=current_shift, variables=variables, c1index=4)
+            current.simplify()
             tc = time.time()
             tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
             self.contracts.append(tuple)
@@ -314,6 +316,7 @@ class NAVScenarioGeometric:
             current_shift: PolyhedralContract = contract_shift(c=current, offset=length)
             tb = time.time()
             current: PolyhedralContract = scenario_sequence(c1=current, c2=current_shift, variables=variables, c1index=length)
+            current.simplify()
             tc = time.time()
             tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
             self.contracts.append(tuple)
