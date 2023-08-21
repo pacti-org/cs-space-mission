@@ -248,12 +248,14 @@ class NAVLoop:
         self.steps34: PolyhedralContract = scenario_sequence(
             c1=self.mdnav, c2=self.tcm, variables=["dv", "t", "trtd", "ttid"], c1index=step + 2
         )
+        self.steps34.simplify()
         self.steps234: PolyhedralContract = scenario_sequence(
             c1=self.od,
             c2=self.steps34,
             variables=["ertd", "t", "trtd", "ttid"],
             c1index=step + 1,
         )
+        self.steps234.simplify()
         self.steps1234: PolyhedralContract = scenario_sequence(
             c1=self.meas,
             c2=self.steps234,
@@ -307,8 +309,11 @@ class NAVScenarioGeometric:
                 f"iterations must be greater than zero; got: {iterations=}"
             )
         l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        l1.steps1234.simplify()
         l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        l2.steps1234.simplify()
         current = scenario_sequence(c1=l1.steps1234, c2=l2.steps1234, variables=variables, c1index=4)
+        current.simplify()
         self.contracts: List[Tuple[int, PolyhedralContract, float, float]] = []
         length: int = 8
         for i in range(iterations):
@@ -321,5 +326,5 @@ class NAVScenarioGeometric:
             tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
             self.contracts.append(tuple)
             length = 2 * length
-            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} vars: {len(current.vars)} constraints: {len(current.a.terms)+len(current.g.terms)}")
+            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints")
            

@@ -90,7 +90,7 @@ def scenario_sequence(
     renamed_c1_outputs = [(f"{v}{c1index}_exit", f"output_{v}{c1index}") for v in variables]
 
     c2_with_inputs_renamed = c2.rename_variables(c2_inputs_to_c1_outputs)
-    c12_with_outputs_kept = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs)
+    c12_with_outputs_kept, _ = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs, simplify=False)
     c12 = c12_with_outputs_kept.rename_variables(renamed_c1_outputs)
 
     if file_name:
