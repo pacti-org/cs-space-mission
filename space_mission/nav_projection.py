@@ -1,5 +1,5 @@
 from pacti.terms.polyhedra import PolyhedralContract
-from typing import Tuple
+from typing import Optional, List, Tuple
 from utils import (
     contract_shift,
     get_numerical_bounds,
@@ -245,18 +245,18 @@ class NAVLoop:
             nochange_contract(step + 3, name="ttid")
         )
 
-        self.steps34: PolyhedralContract = scenario_sequence(
+        self.steps34, _ = scenario_sequence(
             c1=self.mdnav, c2=self.tcm, variables=["dv", "t", "trtd", "ttid"], c1index=step + 2
         )
         self.steps34.simplify()
-        self.steps234: PolyhedralContract = scenario_sequence(
+        self.steps234, _ = scenario_sequence(
             c1=self.od,
             c2=self.steps34,
             variables=["ertd", "t", "trtd", "ttid"],
             c1index=step + 1,
         )
         self.steps234.simplify()
-        self.steps1234: PolyhedralContract = scenario_sequence(
+        self.steps1234, _ = scenario_sequence(
             c1=self.meas,
             c2=self.steps234,
             variables=["error", "t", "trtd", "ttid"],
@@ -272,26 +272,37 @@ class NAVScenarioLinear:
         gain: Tuple[float, float],
         max_dv: float,
         me: Tuple[float, float],
-        variables: List[str]
+        variables: List[str],
+        tactics_order: Optional[List[int]] = None
     ) -> None:
         if not (0 <= iterations):
             raise ValueError(
                 f"iterations must be greater than zero; got: {iterations=}"
             )
-        l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
-        l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
-        current = scenario_sequence(c1=l1.steps1234, c2=l2.steps1234, variables=variables, c1index=4)
-        self.contracts: List[Tuple[int, PolyhedralContract, float, float]] = []
+        self.l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l1.steps1234.simplify()
+        self.l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l2.steps1234.simplify()
+        current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=variables, c1index=4, tactics_order=tactics_order)
+        current.simplify()
+        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralContract] = []
+        self.shifted: List[PolyhedralContract] = []
+        self.currents.append(current)
         length: int = 2
         for _ in range(iterations):
+            self.currents.append(current)
             length = length+1
             ta = time.time()
             current_shift: PolyhedralContract = contract_shift(c=current, offset=4)
             tb = time.time()
-            current: PolyhedralContract = scenario_sequence(c1=l1.steps1234, c2=current_shift, variables=variables, c1index=4)
+            current, tactics = scenario_sequence(c1=self.l1.steps1234, c2=current_shift, variables=variables, c1index=4, tactics_order=tactics_order)
             current.simplify()
             tc = time.time()
-            tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
+            
+            self.shifted.append(current_shift)
+            
+            tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
 
 class NAVScenarioGeometric:
@@ -302,28 +313,37 @@ class NAVScenarioGeometric:
         gain: Tuple[float, float],
         max_dv: float,
         me: Tuple[float, float],
-        variables: List[str]
+        variables: List[str],
+        tactics_order: Optional[List[int]] = None
     ) -> None:
         if not (0 <= iterations):
             raise ValueError(
                 f"iterations must be greater than zero; got: {iterations=}"
             )
-        l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
-        l1.steps1234.simplify()
-        l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
-        l2.steps1234.simplify()
-        current = scenario_sequence(c1=l1.steps1234, c2=l2.steps1234, variables=variables, c1index=4)
+        self.l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l1.steps1234.simplify()
+        self.l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l2.steps1234.simplify()
+        current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=variables, c1index=4, tactics_order=tactics_order)
         current.simplify()
-        self.contracts: List[Tuple[int, PolyhedralContract, float, float]] = []
+        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralContract] = []
+        self.shifted: List[PolyhedralContract] = []
+        self.currents.append(current)
         length: int = 8
         for i in range(iterations):
+            
             ta = time.time()
             current_shift: PolyhedralContract = contract_shift(c=current, offset=length)
             tb = time.time()
-            current: PolyhedralContract = scenario_sequence(c1=current, c2=current_shift, variables=variables, c1index=length)
+            current, tactics = scenario_sequence(c1=current, c2=current_shift, variables=variables, c1index=length, tactics_order=tactics_order)
             current.simplify()
             tc = time.time()
-            tuple: Tuple[int, PolyhedralContract, float, float] = (length, current, tb - ta, tc - tb)
+            
+            self.shifted.append(current_shift)
+            self.currents.append(current)
+            
+            tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
             length = 2 * length
             print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints")

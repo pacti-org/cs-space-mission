@@ -66,8 +66,9 @@ def scenario_sequence(
     c1index: int,
     c2index: Optional[int] = None,
     file_name: Optional[str] = None,
-) -> PolyhedralContract:
-    """
+    tactics_order: Optional[List[int]] = None
+) -> Tuple[PolyhedralContract, List[List[Tuple[int, float, int]]]]:
+    """[]
     Composes c1 with a c2 modified to rename its entry variables according to c1's exit variables
 
     Args:
@@ -90,7 +91,7 @@ def scenario_sequence(
     renamed_c1_outputs = [(f"{v}{c1index}_exit", f"output_{v}{c1index}") for v in variables]
 
     c2_with_inputs_renamed = c2.rename_variables(c2_inputs_to_c1_outputs)
-    c12_with_outputs_kept, _ = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs, simplify=False)
+    c12_with_outputs_kept, tactics = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs, simplify=False, tactics_order=tactics_order)
     c12 = c12_with_outputs_kept.rename_variables(renamed_c1_outputs)
 
     if file_name:
@@ -100,7 +101,7 @@ def scenario_sequence(
             file_name=file_name,
         )
 
-    return c12
+    return c12, tactics
 
 def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
     """
