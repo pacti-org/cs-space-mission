@@ -12,6 +12,8 @@ import operator
 import sys
 import re
 from typing import Optional
+from collections import Counter
+
     
 from scipy.spatial import QhullError
 
@@ -91,7 +93,7 @@ def scenario_sequence(
     renamed_c1_outputs = [(f"{v}{c1index}_exit", f"output_{v}{c1index}") for v in variables]
 
     c2_with_inputs_renamed = c2.rename_variables(c2_inputs_to_c1_outputs)
-    c12_with_outputs_kept, tactics = c1.compose(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs, simplify=False, tactics_order=tactics_order)
+    c12_with_outputs_kept, tactics = c1.compose_tactics(c2_with_inputs_renamed, vars_to_keep=keep_c1_outputs, simplify=False, tactics_order=tactics_order)
     c12 = c12_with_outputs_kept.rename_variables(renamed_c1_outputs)
 
     if file_name:
@@ -632,3 +634,27 @@ def add_constant_and_replace(s: str, constant: int) -> str:
 def contract_shift(c: PolyhedralContract, offset: int) -> PolyhedralContract:
     renaming = list(reversed(sorted([(v.name, add_constant_and_replace(s=v.name, constant=offset)) for v in c.vars])))
     return c.rename_variables(renaming)
+
+def contract_statistics(c: PolyhedralContract) -> Tuple[float, List[Tuple[int, int]]]:
+    """For a given contract, calculate summary statistics about its assumptions and guarantees.
+    
+    Args:
+        c: PolyhedralContract
+        
+    Returns:
+        A tuple of:
+        - the density of the variables used in the assumption and guarantee constraints;
+        - the list of the count of constraints using a given number of variables, sorted by count.
+    """
+    terms: List[PolyhedralTerm] = c.a.terms + c.g.terms
+    nvars: int = len(c.vars)
+    counts: List[int] = [len(t.vars) for t in terms]
+    density: float = sum(counts) / ( nvars * len(terms) )
+    
+    # Use Counter to count occurrences of each value in counts
+    count_occurrences = Counter(counts)
+    
+    # Convert Counter to sorted list of tuples
+    sorted_counts = sorted(count_occurrences.items(), reverse=True)
+    
+    return density, sorted_counts

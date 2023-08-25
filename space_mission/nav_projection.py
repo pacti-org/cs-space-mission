@@ -2,6 +2,7 @@ from pacti.terms.polyhedra import PolyhedralContract
 from typing import Optional, List, Tuple
 from utils import (
     contract_shift,
+    contract_statistics,
     get_numerical_bounds,
     nochange_contract,
     plot_steps,
@@ -281,8 +282,12 @@ class NAVScenarioLinear:
             )
         self.l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
         self.l1.steps1234.simplify()
+        density, counts = contract_statistics(self.l1.steps1234)
+        print(f"fixed input contract: {len(self.l1.steps1234.vars)} vars, {len(self.l1.steps1234.a.terms)+len(self.l1.steps1234.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
+
         self.l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
         self.l2.steps1234.simplify()
+        
         current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=variables, c1index=4, tactics_order=tactics_order)
         current.simplify()
         self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
@@ -290,7 +295,7 @@ class NAVScenarioLinear:
         self.shifted: List[PolyhedralContract] = []
         self.currents.append(current)
         length: int = 2
-        for _ in range(iterations):
+        for i in range(iterations):
             self.currents.append(current)
             length = length+1
             ta = time.time()
@@ -304,6 +309,8 @@ class NAVScenarioLinear:
             
             tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
+            density, counts = contract_statistics(current)
+            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} variable size input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
 
 class NAVScenarioGeometric:
     def __init__(
@@ -346,5 +353,6 @@ class NAVScenarioGeometric:
             tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
             length = 2 * length
-            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints")
+            density, counts = contract_statistics(current)
+            print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
            
