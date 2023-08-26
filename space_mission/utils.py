@@ -632,8 +632,18 @@ def add_constant_and_replace(s: str, constant: int) -> str:
     return re.sub(r'\d+', replacer, s)
 
 def contract_shift(c: PolyhedralContract, offset: int) -> PolyhedralContract:
-    renaming = list(reversed(sorted([(v.name, add_constant_and_replace(s=v.name, constant=offset)) for v in c.vars])))
-    return c.rename_variables(renaming)
+    a_vars, a_a, a_b, _, _ = PolyhedralTermList.termlist_to_polytope(c.a, PolyhedralTermList())
+    a_renamed = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in a_vars]
+    a_shifted = PolyhedralTermList.polytope_to_termlist(a_a, a_b, a_renamed)
+    
+    g_vars, g_a, g_b, _, _ = PolyhedralTermList.termlist_to_polytope(c.g, PolyhedralTermList())
+    g_renamed = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in g_vars]
+    g_shifted = PolyhedralTermList.polytope_to_termlist(g_a, g_b, g_renamed)
+    
+    inputs_shifted = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in c.inputvars]
+    outputs_shifted = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in c.outputvars]
+    
+    return PolyhedralContract(a_shifted, g_shifted, inputs_shifted, outputs_shifted)
 
 def contract_statistics(c: PolyhedralContract) -> Tuple[float, List[Tuple[int, int]]]:
     """For a given contract, calculate summary statistics about its assumptions and guarantees.
