@@ -10,6 +10,7 @@ from utils import (
     tuple2float,
 )
 import time
+import pickle
 from matplotlib.figure import Figure
 
 from functools import partial
@@ -355,4 +356,71 @@ class NAVScenarioGeometric:
             length = 2 * length
             density, counts = contract_statistics(current)
             print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
+            print(tactics)
+
+class NAVScenarioGeometricGenerator:
+    def __init__(
+        self,
+        mu: Optional[float] = None,
+        gain: Optional[Tuple[float, float]] = None,
+        max_dv: Optional[float] = None,
+        me: Optional[Tuple[float, float]] = None,
+        variables: Optional[List[str]] = None,
+        tactics_order: Optional[List[int]] = None,
+        load_from_file: Optional[str] = None
+    ) -> None:
+        if load_from_file:
+            # Load existing state from disk
+            self.load_state(load_from_file)
+            return
+
+        # Ensure that iterations and other parameters are provided when not loading from file
+        if mu is None or gain is None or max_dv is None or me is None or variables is None:
+            raise ValueError("Required parameters not provided!")
+
+        self.tactics_order: Optional[List[int]] = tactics_order
+        self.variables: List[str] = variables
+        self.l1 = NAVLoop(step=1, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l1.steps1234.simplify()
+        self.l2 = NAVLoop(step=5, mu=mu, gain=gain, max_dv=max_dv, me=me)
+        self.l2.steps1234.simplify()
+        current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=self.variables, c1index=4, tactics_order=self.tactics_order)
+        current.simplify()
+        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralContract] = []
+        self.shifted: List[PolyhedralContract] = []
+        self.currents.append(current)
+        self.length: int = 8
+        
+        # Initializing the iteration number
+        self.iteration_number: int = 0
+
+    def save_state(self, filename: str) -> None:
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+    def load_state(self, filename: str) -> None:
+        with open(filename, "rb") as f:
+            tmp_dict = pickle.load(f).__dict__
+            self.__dict__.update(tmp_dict)
+
+    def run_iteration(self) -> None:
+
+        current = self.currents[-1]
+        self.iteration_number += 1
+        ta = time.time()
+        current_shift: PolyhedralContract = contract_shift(c=current, offset=self.length)
+        tb = time.time()
+        current, tactics = scenario_sequence(c1=current, c2=current_shift, variables=self.variables, c1index=self.length, tactics_order=self.tactics_order)
+        current.simplify()
+        tc = time.time()
+        
+        self.shifted.append(current_shift)
+        self.currents.append(current)
+        
+        tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (self.length, current, tb - ta, tc - tb, tactics)
+        self.contracts.append(tuple)
+        self.length = 2 * self.length
+        density, counts = contract_statistics(current)
+        print(f"{self.iteration_number}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
            
