@@ -312,6 +312,7 @@ class NAVScenarioLinear:
             self.contracts.append(tuple)
             density, counts = contract_statistics(current)
             print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} variable size input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
+            print(tactics)
 
 class NAVScenarioGeometric:
     def __init__(
@@ -423,4 +424,33 @@ class NAVScenarioGeometricGenerator:
         self.length = 2 * self.length
         density, counts = contract_statistics(current)
         print(f"{self.iteration_number}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
-           
+        print(tactics)
+
+def show_bounds(n: int, c: PolyhedralContract, var: str, title: str, text: str, nth_tick: int) -> Figure:
+    sn = ["initial"]
+    for i in range( n // 4):
+        sn = sn + [f"meas{i}", f"od{i}", f"mdnav{i}", f"tcm{i}"]
+
+    def compute_bounds(i: int) -> tuple2float:
+        return get_numerical_bounds(c=c, var=f"output_{var}{i}")
+
+    last_bounds: tuple2float = get_numerical_bounds(c=c, var=f"{var}{n}_exit")
+    middle: List[tuple2float] = p_map(compute_bounds, list(range(1, n)))
+    sb: List[tuple2float] = (
+        [get_numerical_bounds(c=c, var=f"{var}1_entry")]
+        + middle
+        + [last_bounds]
+    )
+    density, counts = contract_statistics(c)
+    text = text + f"\n{len(c.inputvars)} input variables\n{len(c.outputvars)} output variables\n{len(c.a.terms)} assumptions\n{len(c.g.terms)} constraints\n{density=:.4g}\nsize distribution:"
+    for count in counts:
+        text = text + f"\n{count}"
+    text = text + f"\n{n} sequence steps\nbounds({var}{n}_exit)=[{last_bounds[0]:.3g},{last_bounds[1]:.3g}]"
+    return plot_steps(
+        step_bounds=sb,
+        step_names=sn,
+        ylabel=var,
+        title=title,
+        text=text,
+        nth_tick=nth_tick
+    )

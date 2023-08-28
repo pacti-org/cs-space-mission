@@ -9,7 +9,7 @@ authors = [{name = "name", email = "email"}]
 license = "BSD-3-Clause"
 dynamic = ["version"]
 dependencies = [
-    "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@8bff8d",
+    "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@b42a2d3",
     "pandas>=2.0.1",
     "ipympl>=0.9.3",
 ]

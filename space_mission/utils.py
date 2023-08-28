@@ -70,7 +70,7 @@ def scenario_sequence(
     file_name: Optional[str] = None,
     tactics_order: Optional[List[int]] = None
 ) -> Tuple[PolyhedralContract, List[List[Tuple[int, float, int]]]]:
-    """[]
+    """
     Composes c1 with a c2 modified to rename its entry variables according to c1's exit variables
 
     Args:
