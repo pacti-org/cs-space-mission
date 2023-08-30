@@ -269,14 +269,24 @@ class NAVLoop:
 class NAVScenarioLinear:
     def __init__(
         self,
-        iterations: int,
-        mu: float,
-        gain: Tuple[float, float],
-        max_dv: float,
-        me: Tuple[float, float],
-        variables: List[str],
-        tactics_order: Optional[List[int]] = None
+        iterations: Optional[int] = None,
+        mu: Optional[float] = None,
+        gain: Optional[Tuple[float, float]] = None,
+        max_dv: Optional[float] = None,
+        me: Optional[Tuple[float, float]] = None,
+        variables: Optional[List[str]] = None,
+        tactics_order: Optional[List[int]] = None,
+        load_from_file: Optional[str] = None,
     ) -> None:
+        if load_from_file:
+            # Load existing state from disk
+            self.load_state(load_from_file)
+            return
+
+        # Ensure that iterations and other parameters are provided when not loading from file
+        if iterations is None or mu is None or gain is None or max_dv is None or me is None or variables is None:
+            raise ValueError("Required parameters not provided!")
+
         if not (0 <= iterations):
             raise ValueError(
                 f"iterations must be greater than zero; got: {iterations=}"
@@ -313,6 +323,15 @@ class NAVScenarioLinear:
             density, counts = contract_statistics(current)
             print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} variable size input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
             print(tactics)
+
+    def save_state(self, filename: str) -> None:
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+    def load_state(self, filename: str) -> None:
+        with open(filename, "rb") as f:
+            tmp_dict = pickle.load(f).__dict__
+            self.__dict__.update(tmp_dict)
 
 class NAVScenarioGeometric:
     def __init__(
