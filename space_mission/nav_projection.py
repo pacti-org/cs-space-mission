@@ -43,16 +43,12 @@ def meas_nav_error(
     trtd_entry: str = f"trtd{step}_entry"
     trtd_exit: str = f"trtd{step}_exit"
 
-    # true trajectory intercept distance
-    ttid_entry: str = f"ttid{step}_entry"
-    ttid_exit: str = f"ttid{step}_exit"
-
     # trajectory error
     error: str = f"error{step}_exit"
 
     return PolyhedralContract.from_string(
-        input_vars=[duration, t_entry, trtd_entry, ttid_entry],
-        output_vars=[t_exit, trtd_exit, ttid_exit, error],
+        input_vars=[duration, t_entry, trtd_entry],
+        output_vars=[t_exit, trtd_exit, error],
         assumptions=[
             # The task has a positive scheduled duration.
             f"0 <= {duration}",
