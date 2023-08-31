@@ -228,36 +228,28 @@ class NAVLoop:
             max_dv (float): maximum delta-v capability.
             me (Tuple[float, float]): min/max range of maneuver execution error proportional to the delta-v.
         """
-        self.meas: PolyhedralContract = meas_nav_error(step, mu).merge(
-            nochange_contract(step, name="ttid")
-        )
-        self.od: PolyhedralContract = estimate_nav(step + 1).merge(
-            nochange_contract(step + 1, name="ttid")
-        )
+        self.meas: PolyhedralContract = meas_nav_error(step, mu)
+        self.od: PolyhedralContract = estimate_nav(step + 1)
         self.mdnav: PolyhedralContract = calculate_dv(step + 2, gain, max_dv).merge(
             nochange_contract(step + 2, name="trtd")
-        ).merge(
-            nochange_contract(step + 2, name="ttid")
         )
-        self.tcm: PolyhedralContract = dv_maneuver(step + 3, me).merge(
-            nochange_contract(step + 3, name="ttid")
-        )
+        self.tcm: PolyhedralContract = dv_maneuver(step + 3, me)
 
         self.steps34, _ = scenario_sequence(
-            c1=self.mdnav, c2=self.tcm, variables=["dv", "t", "trtd", "ttid"], c1index=step + 2
+            c1=self.mdnav, c2=self.tcm, variables=["dv", "t", "trtd"], c1index=step + 2
         )
         self.steps34.simplify()
         self.steps234, _ = scenario_sequence(
             c1=self.od,
             c2=self.steps34,
-            variables=["ertd", "t", "trtd", "ttid"],
+            variables=["ertd", "t", "trtd"],
             c1index=step + 1,
         )
         self.steps234.simplify()
         self.steps1234, _ = scenario_sequence(
             c1=self.meas,
             c2=self.steps234,
-            variables=["error", "t", "trtd", "ttid"],
+            variables=["error", "t", "trtd"],
             c1index=step,
         )
         self.steps1234.simplify()
