@@ -1,8 +1,9 @@
-from pacti.terms.polyhedra import PolyhedralTerm, PolyhedralTermList, PolyhedralContract
+from pacti.terms.polyhedra import PolyhedralTerm, PolyhedralTermList
+from pacti.contracts import PolyhedralIoContract
 from pacti.iocontract import Var
 from typing import Dict, List, Optional, Tuple, Union
 from pacti import write_contracts_to_file
-import pacti.terms.polyhedra.plots as plh_plots
+import pacti.utils.plots as plh_plots
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure as MplFigure
 from matplotlib.patches import Polygon as MplPatchPolygon
@@ -36,10 +37,10 @@ def check_tuple(t: tuple2) -> tuple2float:
         b = t[1]
     return (a, b)
 
-def get_numerical_bounds(c: PolyhedralContract, var: str) -> tuple2float:
+def get_numerical_bounds(c: PolyhedralIoContract, var: str) -> tuple2float:
     return check_tuple(c.get_variable_bounds(var))
 
-def nochange_contract(step: int, name: str) -> PolyhedralContract:
+def nochange_contract(step: int, name: str) -> PolyhedralIoContract:
     """
     Constructs a no-change contract between entry/exit variables derived from the name and step index.
 
@@ -50,7 +51,7 @@ def nochange_contract(step: int, name: str) -> PolyhedralContract:
     Returns:
         A no-change contract.
     """
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[f"{name}{step}_entry"],
         output_vars=[f"{name}{step}_exit"],
         assumptions=[
@@ -62,14 +63,14 @@ def nochange_contract(step: int, name: str) -> PolyhedralContract:
     )
     
 def scenario_sequence(
-    c1: PolyhedralContract,
-    c2: PolyhedralContract,
+    c1: PolyhedralIoContract,
+    c2: PolyhedralIoContract,
     variables: List[str],
     c1index: int,
     c2index: Optional[int] = None,
     file_name: Optional[str] = None,
     tactics_order: Optional[List[int]] = None
-) -> Tuple[PolyhedralContract, List[List[Tuple[int, float, int]]]]:
+) -> Tuple[PolyhedralIoContract, List[List[Tuple[int, float, int]]]]:
     """
     Composes c1 with a c2 modified to rename its entry variables according to c1's exit variables
 
@@ -105,13 +106,13 @@ def scenario_sequence(
 
     return c12, tactics
 
-def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
+def bound(c: PolyhedralIoContract, var: str) -> Tuple[str, str]:
     """
     Get the bounds on a contract variable, distinguishing among three
     outcomes: a numerical bound, no bounds, and errors interpreted as unknown bounds.
 
     Args:
-        c: PolyhedralContract
+        c: PolyhedralIoContract
             A Pacti contract
 
         var: str
@@ -137,12 +138,12 @@ def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
         return "unknown", "unknown"
 
 
-def bounds(c: PolyhedralContract) -> List[str]:
+def bounds(c: PolyhedralIoContract) -> List[str]:
     """
     Produces the list of input and output variable bounds for a contract.
 
     Args:
-        c: PolyhedralContract
+        c: PolyhedralIoContract
             A Pacti contract
 
     Returns:
@@ -190,12 +191,12 @@ def show_termlist(tl: PolyhedralTermList) -> str:
     return f"{str(PolyhedralTermList(sorted(tl.terms, key=polyhedral_term_key)))}"
 
 
-def show_contract(c: PolyhedralContract) -> str:
+def show_contract(c: PolyhedralIoContract) -> str:
     """
-    Produces a human-friendly string representation of a PolyhedralContract.
+    Produces a human-friendly string representation of a PolyhedralIoContract.
 
     Args:
-        c: PolyhedralContract
+        c: PolyhedralIoContract
             A contract.
 
     Returns:
@@ -631,7 +632,7 @@ def add_constant_and_replace(s: str, constant: int) -> str:
     # Use re.sub with a function as the replacement argument
     return re.sub(r'\d+', replacer, s)
 
-def contract_shift(c: PolyhedralContract, offset: int) -> PolyhedralContract:
+def contract_shift(c: PolyhedralIoContract, offset: int) -> PolyhedralIoContract:
     a_vars, a_a, a_b, _, _ = PolyhedralTermList.termlist_to_polytope(c.a, PolyhedralTermList())
     a_renamed = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in a_vars]
     a_shifted = PolyhedralTermList.polytope_to_termlist(a_a, a_b, a_renamed)
@@ -643,13 +644,13 @@ def contract_shift(c: PolyhedralContract, offset: int) -> PolyhedralContract:
     inputs_shifted = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in c.inputvars]
     outputs_shifted = [Var(add_constant_and_replace(s=v.name, constant=offset)) for v in c.outputvars]
     
-    return PolyhedralContract(a_shifted, g_shifted, inputs_shifted, outputs_shifted)
+    return PolyhedralIoContract(a_shifted, g_shifted, inputs_shifted, outputs_shifted)
 
-def contract_statistics(c: PolyhedralContract) -> Tuple[float, List[Tuple[int, int]]]:
+def contract_statistics(c: PolyhedralIoContract) -> Tuple[float, List[Tuple[int, int]]]:
     """For a given contract, calculate summary statistics about its assumptions and guarantees.
     
     Args:
-        c: PolyhedralContract
+        c: PolyhedralIoContract
         
     Returns:
         A tuple of:

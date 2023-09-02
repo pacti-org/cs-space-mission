@@ -1,5 +1,6 @@
 """Helper module for the space mission case study."""
-from pacti.terms.polyhedra import PolyhedralTerm, PolyhedralTermList, PolyhedralContract
+from pacti.terms.polyhedra import PolyhedralTerm, PolyhedralTermList
+from pacti.contracts import PolyhedralIoContract
 
 from pacti import write_contracts_to_file
 from pacti.iocontract import Var
@@ -32,7 +33,7 @@ class OperationCounts:
 class Schedule:
     scenario: List[tuple2float]
     reqs: np.ndarray
-    contract: PolyhedralContract
+    contract: PolyhedralIoContract
 
 
 numeric = Union[int, float]
@@ -52,7 +53,7 @@ def check_tuple(t: tuple2) -> tuple2float:
     return (a, b)
 
 
-def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
+def bound(c: PolyhedralIoContract, var: str) -> Tuple[str, str]:
     try:
         b = c.get_variable_bounds(var)
         if isinstance(b[0], float):
@@ -67,7 +68,7 @@ def bound(c: PolyhedralContract, var: str) -> Tuple[str, str]:
     except ValueError:
         return "unknown", "unknown"
 
-def bounds(c: PolyhedralContract) -> List[str]:
+def bounds(c: PolyhedralIoContract) -> List[str]:
     bounds=[]
     for v in sorted(c.inputvars, key=operator.attrgetter('name')):
         low, high = bound(c, v.name)
@@ -80,7 +81,7 @@ def bounds(c: PolyhedralContract) -> List[str]:
     return bounds
 
 
-def nochange_contract(s: int, name: str) -> PolyhedralContract:
+def nochange_contract(s: int, name: str) -> PolyhedralIoContract:
     """
     Constructs a no-change contract between entry/exit variables derived from the name and step index.
 
@@ -91,7 +92,7 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
     Returns:
         A no-change contract.
     """
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[f"{name}{s}_entry"],
         output_vars=[f"{name}{s}_exit"],
         assumptions=[
@@ -106,13 +107,13 @@ def nochange_contract(s: int, name: str) -> PolyhedralContract:
 
 
 def scenario_sequence(
-    c1: PolyhedralContract,
-    c2: PolyhedralContract,
+    c1: PolyhedralIoContract,
+    c2: PolyhedralIoContract,
     variables: list[str],
     c1index: int,
     c2index: Optional[int] = None,
     file_name: Optional[str] = None,
-) -> PolyhedralContract:
+) -> PolyhedralIoContract:
     """
     Composes c1 with a c2 modified to rename its entry variables according to c1's exit variables
 
@@ -149,7 +150,7 @@ def scenario_sequence(
     return c12
 
 
-named_contract_t = Tuple[str, PolyhedralContract]
+named_contract_t = Tuple[str, PolyhedralIoContract]
 
 named_contracts_t = List[named_contract_t]
 
@@ -158,22 +159,22 @@ contract_names_t = List[str]
 
 @dataclass(frozen=True)
 class FailedMerges:
-    current: PolyhedralContract
+    current: PolyhedralIoContract
     merged: contract_names_t
     failed_name: str
-    failed_contract: PolyhedralContract
+    failed_contract: PolyhedralIoContract
 
 
-merge_result_t = Union[FailedMerges, PolyhedralContract]
+merge_result_t = Union[FailedMerges, PolyhedralIoContract]
 
 schedule_result_t = Union[FailedMerges, Schedule]
 
 schedule_results_t = Tuple[List[FailedMerges], List[Schedule]]
 
 
-def perform_merges_seq(c: PolyhedralContract, c_seq: named_contracts_t) -> merge_result_t:
+def perform_merges_seq(c: PolyhedralIoContract, c_seq: named_contracts_t) -> merge_result_t:
     names: contract_names_t = []
-    current: PolyhedralContract = c
+    current: PolyhedralIoContract = c
     for cn, cc in c_seq:
         try:
             current = current.merge(cc)
@@ -201,12 +202,12 @@ def polyhedral_term_key(t: PolyhedralTerm) -> str:
     """
     return ",".join(sorted([v.name for v in t.vars]))
 
-def show_contract(c: PolyhedralContract) -> str:
+def show_contract(c: PolyhedralIoContract) -> str:
     """
-    Produces a human-friendly string representation of a PolyhedralContract.
+    Produces a human-friendly string representation of a PolyhedralIoContract.
 
     Args:
-        c: PolyhedralContract
+        c: PolyhedralIoContract
             A contract.
 
     Returns:

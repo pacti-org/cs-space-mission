@@ -1,4 +1,4 @@
-from pacti.terms.polyhedra import PolyhedralContract
+from pacti.contracts import PolyhedralIoContract
 from typing import Optional, List, Tuple
 from utils import (
     contract_shift,
@@ -20,7 +20,7 @@ from p_tqdm import p_map, p_umap
 
 def meas_nav_error(
     step: int, mu: float
-) -> PolyhedralContract:
+) -> PolyhedralIoContract:
     """Measurement function in the navigation domain.
     
     Args:
@@ -29,7 +29,7 @@ def meas_nav_error(
                     that applies proportionally to relative distance.
 
     Returns:
-        PolyhedralContract: Navigation measurement sequence step contract.
+        PolyhedralIoContract: Navigation measurement sequence step contract.
     """
 
     # step duration
@@ -46,7 +46,7 @@ def meas_nav_error(
     # trajectory error
     error: str = f"error{step}_exit"
 
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[duration, t_entry, trtd_entry],
         output_vars=[t_exit, trtd_exit, error],
         assumptions=[
@@ -68,14 +68,14 @@ def meas_nav_error(
         ],
     )
 
-def estimate_nav(step: int) -> PolyhedralContract:
+def estimate_nav(step: int) -> PolyhedralIoContract:
     """Calculate delta-v maneuver to reduce the relative trajectory distance.
 
     Args:
         step (int): sequence step index.
 
     Returns:
-        PolyhedralContract: relative trajectory navigation estimate
+        PolyhedralIoContract: relative trajectory navigation estimate
                             from nav measurement errors
     """
     # step duration
@@ -95,7 +95,7 @@ def estimate_nav(step: int) -> PolyhedralContract:
     # trajectory error
     error: str = f"error{step}_entry"
     
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[duration, t_entry, trtd_entry, error],
         output_vars=[t_exit, trtd_exit, ertd],
         assumptions=[
@@ -117,7 +117,7 @@ def estimate_nav(step: int) -> PolyhedralContract:
         ],
     )
 
-def calculate_dv(step: int, gain: Tuple[float, float], max_dv: float) -> PolyhedralContract:
+def calculate_dv(step: int, gain: Tuple[float, float], max_dv: float) -> PolyhedralIoContract:
     """Estimate mission design navigation trajectory and delta-v correction
 
     Args:
@@ -127,7 +127,7 @@ def calculate_dv(step: int, gain: Tuple[float, float], max_dv: float) -> Polyhed
         max_dv (float): maximum delta-v capability.
 
     Returns:
-        PolyhedralContract: relative trajectory navigation estimate
+        PolyhedralIoContract: relative trajectory navigation estimate
                             from nav measurement errors with calculated delta-v maneuver
     """
     # step duration
@@ -143,7 +143,7 @@ def calculate_dv(step: int, gain: Tuple[float, float], max_dv: float) -> Polyhed
     # trajectory correction
     dv: str = f"dv{step}_exit"
     
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[duration, t_entry, ertd],
         output_vars=[t_exit, dv],
         assumptions=[
@@ -162,7 +162,7 @@ def calculate_dv(step: int, gain: Tuple[float, float], max_dv: float) -> Polyhed
         ],
     )
 
-def dv_maneuver(step: int, me: Tuple[float, float]) -> PolyhedralContract:
+def dv_maneuver(step: int, me: Tuple[float, float]) -> PolyhedralIoContract:
     """Apply a delta-v maneuver
 
     Args:
@@ -170,7 +170,7 @@ def dv_maneuver(step: int, me: Tuple[float, float]) -> PolyhedralContract:
         me (Tuple[float, float]): min/max range of maneuver execution error proportional to the delta-v.
 
     Returns:
-        PolyhedralContract: Updated true relative trajectory distance with delta-v applied up to maneuver execution error.
+        PolyhedralIoContract: Updated true relative trajectory distance with delta-v applied up to maneuver execution error.
     """
     
     # step duration
@@ -187,7 +187,7 @@ def dv_maneuver(step: int, me: Tuple[float, float]) -> PolyhedralContract:
     # trajectory correction
     dv: str = f"dv{step}_entry"
 
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[duration, t_entry, trtd_entry, dv],
         output_vars=[t_exit, trtd_exit],
         assumptions=[
@@ -228,12 +228,12 @@ class NAVLoop:
             max_dv (float): maximum delta-v capability.
             me (Tuple[float, float]): min/max range of maneuver execution error proportional to the delta-v.
         """
-        self.meas: PolyhedralContract = meas_nav_error(step, mu)
-        self.od: PolyhedralContract = estimate_nav(step + 1)
-        self.mdnav: PolyhedralContract = calculate_dv(step + 2, gain, max_dv).merge(
+        self.meas: PolyhedralIoContract = meas_nav_error(step, mu)
+        self.od: PolyhedralIoContract = estimate_nav(step + 1)
+        self.mdnav: PolyhedralIoContract = calculate_dv(step + 2, gain, max_dv).merge(
             nochange_contract(step + 2, name="trtd")
         )
-        self.tcm: PolyhedralContract = dv_maneuver(step + 3, me)
+        self.tcm: PolyhedralIoContract = dv_maneuver(step + 3, me)
 
         self.steps34, _ = scenario_sequence(
             c1=self.mdnav, c2=self.tcm, variables=["dv", "t", "trtd"], c1index=step + 2
@@ -289,16 +289,16 @@ class NAVScenarioLinear:
         
         current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=variables, c1index=4, tactics_order=tactics_order)
         current.simplify()
-        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
-        self.currents: List[PolyhedralContract] = []
-        self.shifted: List[PolyhedralContract] = []
+        self.contracts: List[Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralIoContract] = []
+        self.shifted: List[PolyhedralIoContract] = []
         self.currents.append(current)
         length: int = 2
         for i in range(iterations):
             self.currents.append(current)
             length = length+1
             ta = time.time()
-            current_shift: PolyhedralContract = contract_shift(c=current, offset=4)
+            current_shift: PolyhedralIoContract = contract_shift(c=current, offset=4)
             tb = time.time()
             current, tactics = scenario_sequence(c1=self.l1.steps1234, c2=current_shift, variables=variables, c1index=4, tactics_order=tactics_order)
             current.simplify()
@@ -306,7 +306,7 @@ class NAVScenarioLinear:
             
             self.shifted.append(current_shift)
             
-            tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
+            tuple: Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
             density, counts = contract_statistics(current)
             print(f"{i}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} variable size input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
@@ -342,15 +342,15 @@ class NAVScenarioGeometric:
         self.l2.steps1234.simplify()
         current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=variables, c1index=4, tactics_order=tactics_order)
         current.simplify()
-        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
-        self.currents: List[PolyhedralContract] = []
-        self.shifted: List[PolyhedralContract] = []
+        self.contracts: List[Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralIoContract] = []
+        self.shifted: List[PolyhedralIoContract] = []
         self.currents.append(current)
         length: int = 8
         for i in range(iterations):
             
             ta = time.time()
-            current_shift: PolyhedralContract = contract_shift(c=current, offset=length)
+            current_shift: PolyhedralIoContract = contract_shift(c=current, offset=length)
             tb = time.time()
             current, tactics = scenario_sequence(c1=current, c2=current_shift, variables=variables, c1index=length, tactics_order=tactics_order)
             current.simplify()
@@ -359,7 +359,7 @@ class NAVScenarioGeometric:
             self.shifted.append(current_shift)
             self.currents.append(current)
             
-            tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
+            tuple: Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]] = (length, current, tb - ta, tc - tb, tactics)
             self.contracts.append(tuple)
             length = 2 * length
             density, counts = contract_statistics(current)
@@ -394,9 +394,9 @@ class NAVScenarioGeometricGenerator:
         self.l2.steps1234.simplify()
         current, _ = scenario_sequence(c1=self.l1.steps1234, c2=self.l2.steps1234, variables=self.variables, c1index=4, tactics_order=self.tactics_order)
         current.simplify()
-        self.contracts: List[Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]]] = []
-        self.currents: List[PolyhedralContract] = []
-        self.shifted: List[PolyhedralContract] = []
+        self.contracts: List[Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]]] = []
+        self.currents: List[PolyhedralIoContract] = []
+        self.shifted: List[PolyhedralIoContract] = []
         self.currents.append(current)
         self.length: int = 8
         
@@ -417,7 +417,7 @@ class NAVScenarioGeometricGenerator:
         current = self.currents[-1]
         self.iteration_number += 1
         ta = time.time()
-        current_shift: PolyhedralContract = contract_shift(c=current, offset=self.length)
+        current_shift: PolyhedralIoContract = contract_shift(c=current, offset=self.length)
         tb = time.time()
         current, tactics = scenario_sequence(c1=current, c2=current_shift, variables=self.variables, c1index=self.length, tactics_order=self.tactics_order)
         current.simplify()
@@ -426,14 +426,14 @@ class NAVScenarioGeometricGenerator:
         self.shifted.append(current_shift)
         self.currents.append(current)
         
-        tuple: Tuple[int, PolyhedralContract, float, float, List[List[Tuple[int, float, int]]]] = (self.length, current, tb - ta, tc - tb, tactics)
+        tuple: Tuple[int, PolyhedralIoContract, float, float, List[List[Tuple[int, float, int]]]] = (self.length, current, tb - ta, tc - tb, tactics)
         self.contracts.append(tuple)
         self.length = 2 * self.length
         density, counts = contract_statistics(current)
         print(f"{self.iteration_number}: shift: {(tb-ta):.3f} compose: {(tc-tb):.3f} each input: {len(current_shift.vars)} vars, {len(current_shift.a.terms)+len(current_shift.g.terms)} constraints; result: {len(current.vars)} vars, {len(current.a.terms)+len(current.g.terms)} constraints; {density=:.4g}; size distribution: {counts}")
         print(tactics)
 
-def show_bounds(n: int, c: PolyhedralContract, var: str, title: str, text: str, nth_tick: int) -> Figure:
+def show_bounds(n: int, c: PolyhedralIoContract, var: str, title: str, text: str, nth_tick: int) -> Figure:
     sn = ["initial"]
     for i in range( n // 4):
         sn = sn + [f"meas{i}", f"od{i}", f"mdnav{i}", f"tcm{i}"]

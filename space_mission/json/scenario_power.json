@@ -1,7 +1,7 @@
 [
   {
     "name": "scenario_power_left_to_right_composition",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "soc1_entry",
@@ -46,7 +46,7 @@
   },
   {
     "name": "scenario_power_right_to_left_composition",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "soc1_entry",

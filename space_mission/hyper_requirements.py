@@ -1,5 +1,6 @@
 import time
-from pacti.terms.polyhedra import PolyhedralTermList, PolyhedralContract
+from pacti.terms.polyhedra import PolyhedralTermList
+from pacti.contracts import PolyhedralIoContract
 from pacti_instrumentation.pacti_counters import summarize_instrumentation_data
 import numpy as np
 from contract_utils import *
@@ -48,11 +49,11 @@ scaled_op_sample: np.ndarray = qmc.scale(sample=op_sample, l_bounds=op_l_bounds,
 
 if run5:
     s5 = open("space_mission/scenarios5.data", "rb")
-    scenarios5: list[tuple[List[tuple2float], PolyhedralContract]] = pickle.load(s5)
+    scenarios5: list[tuple[List[tuple2float], PolyhedralIoContract]] = pickle.load(s5)
     s5.close()
 
     for i, scenario in enumerate(scenarios5):
-        c: PolyhedralContract = scenario[1]
+        c: PolyhedralIoContract = scenario[1]
         g: PolyhedralTermList = c.g
         for t in g.terms:
             if len(t.vars) == 1 and t.vars[0] in c.inputvars:
@@ -97,7 +98,7 @@ if run20:
 
 
     for i, scenario in enumerate(scenarios20):
-        c: PolyhedralContract = scenario[1]
+        c: PolyhedralIoContract = scenario[1]
         g: PolyhedralTermList = c.g
         for t in g.terms:
             if len(t.vars) == 1 and t.vars[0] in c.inputvars:

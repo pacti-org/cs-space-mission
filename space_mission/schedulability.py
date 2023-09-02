@@ -1,4 +1,4 @@
-from pacti.terms.polyhedra import PolyhedralContract
+from pacti.contracts import PolyhedralIoContract
 from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import functools
 import numpy as np
@@ -12,9 +12,9 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
         (
             "durations",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[var],
                         output_vars=[], 
                         assumptions=[f"{var} >= {reqs[2]}"], 
@@ -34,7 +34,7 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
     cs2: named_contracts_t = [
         (
             "initial",
-            PolyhedralContract.from_string(
+            PolyhedralIoContract.from_strings(
                 input_vars=["soc1_entry", "c1_entry", "d1_entry", "u1_entry", "r1_entry"],
                 output_vars=[],
                 assumptions=[
@@ -52,9 +52,9 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
         (
             "output_soc",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
@@ -69,17 +69,17 @@ def make_op_requirement_constraints5(reqs: np.ndarray) -> named_contracts_t:
 
 
 def schedulability_analysis5(
-    scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray]
+    scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralIoContract], np.ndarray]
 ) -> Tuple[PactiInstrumentationData, schedule_result_t]:
     scenario = scenario_reqs[0]
     reqs = scenario_reqs[1]
     op_reqs: named_contracts_t = make_op_requirement_constraints5(reqs)
     result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
-    if isinstance(result, PolyhedralContract):
+    if isinstance(result, PolyhedralIoContract):
         return PactiInstrumentationData().update_counts(), Schedule(scenario=scenario[0], reqs=reqs, contract=result)
     return PactiInstrumentationData().update_counts(), result
 
-def schedulability_analysis5_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
+def schedulability_analysis5_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralIoContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
     return [schedulability_analysis5(sample) for sample in samples_group]
 
 def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
@@ -87,9 +87,9 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
         (
             "durations",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[var],
                         output_vars=[], 
                         assumptions=[f"{var} >= {reqs[2]}"], 
@@ -124,7 +124,7 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
     cs2: named_contracts_t = [
         (
             "initial",
-            PolyhedralContract.from_string(
+            PolyhedralIoContract.from_strings(
                 input_vars=["soc1_entry", "c1_entry", "d1_entry", "u1_entry", "r1_entry"],
                 output_vars=[],
                 assumptions=[
@@ -142,9 +142,9 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
         (
             "output_soc1-5",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
@@ -159,9 +159,9 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
         (
             "output_soc6-10",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
@@ -176,9 +176,9 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
         (
             "output_soc11-15",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
@@ -193,9 +193,9 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
         (
             "output_soc16-20",
             functools.reduce(
-                PolyhedralContract.merge,
+                PolyhedralIoContract.merge,
                 [
-                    PolyhedralContract.from_string(
+                    PolyhedralIoContract.from_strings(
                         input_vars=[],
                         output_vars=[f"output_soc{i}"],
                         assumptions=[],
@@ -210,16 +210,16 @@ def make_op_requirement_constraints20(reqs: np.ndarray) -> named_contracts_t:
 
 
 def schedulability_analysis20(
-    scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray]
+    scenario_reqs: Tuple[Tuple[list[tuple2float], PolyhedralIoContract], np.ndarray]
 ) -> Tuple[PactiInstrumentationData, schedule_result_t]:
     scenario = scenario_reqs[0]
     reqs = scenario_reqs[1]
     op_reqs: named_contracts_t = make_op_requirement_constraints20(reqs)
     result: merge_result_t = perform_merges_seq(scenario[1], op_reqs)
-    if isinstance(result, PolyhedralContract):
+    if isinstance(result, PolyhedralIoContract):
         return PactiInstrumentationData().update_counts(), Schedule(scenario=scenario[0], reqs=reqs, contract=result)
     return PactiInstrumentationData().update_counts(), result
 
 
-def schedulability_analysis20_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
+def schedulability_analysis20_grouped(samples_group: Tuple[Tuple[Tuple[list[tuple2float], PolyhedralIoContract], np.ndarray], ...]) -> List[Tuple[PactiInstrumentationData, schedule_result_t]]:
     return [schedulability_analysis20(sample) for sample in samples_group]

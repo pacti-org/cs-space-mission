@@ -1,4 +1,4 @@
-from pacti.terms.polyhedra import PolyhedralContract
+from pacti.contracts import PolyhedralIoContract
 from pacti_instrumentation.pacti_counters import PactiInstrumentationData
 import numpy as np
 from contract_utils import *
@@ -33,10 +33,10 @@ def print_counts() -> None:
 # Parameters:
 # - s: index of the timeline variables
 # - generation: (min, max) rate of battery charge during the task instance
-def CHRG_power(s: int, generation: tuple[float, float]) -> PolyhedralContract:
+def CHRG_power(s: int, generation: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"soc{s}_entry",  # initial battery SOC
             f"duration_charging{s}",  # variable task duration
@@ -66,7 +66,7 @@ def CHRG_power(s: int, generation: tuple[float, float]) -> PolyhedralContract:
     # Parameters:
 
 
-def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> PolyhedralContract:
+def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> PolyhedralIoContract:
     """A contract for discharging the battery during the task instance.
 
     Args:
@@ -75,11 +75,11 @@ def power_consumer(s: int, task: str, consumption: tuple[float, float]) -> Polyh
         consumption (tuple[float, float]): min,max range of battery discharge during the task instance
 
     Returns:
-        PolyhedralContract: The discharge contract
+        PolyhedralIoContract: The discharge contract
     """
     global nb_contracts
     nb_contracts += 1
-    return PolyhedralContract.from_string(
+    return PolyhedralIoContract.from_strings(
         input_vars=[
             f"soc{s}_entry",  # initial battery SOC
             f"duration_{task}{s}",  # variable task duration
@@ -119,7 +119,7 @@ def generate_power_scenario(
     tcmh_cons: tuple[float, float],
     tcmdv_cons: tuple[float, float],
     rename_outputs: bool = False,
-) -> PolyhedralContract:
+) -> PolyhedralIoContract:
     global nb_compose
     nb_compose += 4  # scenario_sequence
 
@@ -151,10 +151,10 @@ def generate_power_scenario(
 
 # - s: start index of the timeline variables
 # - speed: (min, max) downlink rate during the task instance
-def DSN_data(s: int, speed: tuple[float, float]) -> PolyhedralContract:
+def DSN_data(s: int, speed: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"d{s}_entry",  # initial data volume
             f"duration_dsn{s}",  # variable task duration
@@ -181,10 +181,10 @@ def DSN_data(s: int, speed: tuple[float, float]) -> PolyhedralContract:
 # Parameters:
 # - s: start index of the timeline variables
 # - generation: (min, max) rate of small body observations during the task instance
-def SBO_science_storage(s: int, generation: tuple[float, float]) -> PolyhedralContract:
+def SBO_science_storage(s: int, generation: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"d{s}_entry",  # initial data storage volume
             f"duration_sbo{s}",  # knob variable for SBO duration
@@ -210,10 +210,10 @@ def SBO_science_storage(s: int, generation: tuple[float, float]) -> PolyhedralCo
     return spec
 
 
-def SBO_science_comulative(s: int, generation: tuple[float, float]) -> PolyhedralContract:
+def SBO_science_comulative(s: int, generation: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"c{s}_entry",  # initial cumulative data volume
             f"duration_sbo{s}",  # knob variable for SBO duration
@@ -240,7 +240,7 @@ science_variables = ["d", "c"]
 
 def generate_science_scenario(
     s: int, dsn_speed: tuple[float, float], sbo_gen: tuple[float, float], rename_outputs: bool = False
-) -> PolyhedralContract:
+) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 7  # nochange_contract
     global nb_merge
@@ -284,10 +284,10 @@ def generate_science_scenario(
 # Navigation viewpoint
 
 
-def uncertainty_generating_nav(s: int, noise: tuple[float, float]) -> PolyhedralContract:
+def uncertainty_generating_nav(s: int, noise: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"u{s}_entry",  # initial trajectory estimation uncertainty
             f"r{s}_entry",  # initial relative trajectory distance
@@ -320,10 +320,10 @@ def uncertainty_generating_nav(s: int, noise: tuple[float, float]) -> Polyhedral
 # Parameters:
 # - s: start index of the timeline variables
 # - improvement: rate of trajectory estimation uncertainty improvement during the task instance
-def SBO_nav_uncertainty(s: int, improvement: tuple[float, float]) -> PolyhedralContract:
+def SBO_nav_uncertainty(s: int, improvement: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"u{s}_entry",  # initial trajectory uncertainty
             f"duration_sbo{s}",  # knob variable for SBO duration
@@ -350,10 +350,10 @@ def SBO_nav_uncertainty(s: int, improvement: tuple[float, float]) -> PolyhedralC
     return spec
 
 
-def TCM_navigation_deltav_uncertainty(s: int, noise: tuple[float, float]) -> PolyhedralContract:
+def TCM_navigation_deltav_uncertainty(s: int, noise: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"u{s}_entry",  # initial trajectory estimation uncertainty
             f"duration_tcm_dv{s}",  # knob variable for TCM deltav duration
@@ -380,10 +380,10 @@ def TCM_navigation_deltav_uncertainty(s: int, noise: tuple[float, float]) -> Pol
     return spec
 
 
-def TCM_navigation_deltav_progress(s: int, progress: tuple[float, float]) -> PolyhedralContract:
+def TCM_navigation_deltav_progress(s: int, progress: tuple[float, float]) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 1
-    spec = PolyhedralContract.from_string(
+    spec = PolyhedralIoContract.from_strings(
         input_vars=[
             f"r{s}_entry",  # initial trajectory relative distance
             f"duration_tcm_dv{s}",  # knob variable for TCM deltav duration
@@ -419,7 +419,7 @@ def generate_navigation_scenario(
     tcm_dv_noise: tuple[float, float],
     tcm_dv_progress: tuple[float, float],
     rename_outputs: bool = False,
-) -> PolyhedralContract:
+) -> PolyhedralIoContract:
     global nb_contracts
     nb_contracts += 3  # nochange_contract
     global nb_merge
@@ -465,7 +465,7 @@ def make_range(mean: float, dev: float) -> tuple2float:
 
 def make_scenario(
     s: int, means: np.ndarray, devs: np.ndarray, rename_outputs: bool = False
-) -> Tuple[List[tuple2float], PolyhedralContract]:
+) -> Tuple[List[tuple2float], PolyhedralIoContract]:
     global nb_merge
     nb_merge += 2
 
@@ -497,7 +497,7 @@ def make_scenario(
 
 def generate_5step_scenario(
     mean_dev: Tuple[np.ndarray, np.ndarray]
-) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
+) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralIoContract]:
     return (PactiInstrumentationData().update_counts(),) + make_scenario(1, mean_dev[0], mean_dev[1], True)
 
 
@@ -506,7 +506,7 @@ all_variables = power_variables + science_variables + navigation_variables
 
 def generate_20step_scenario(
     mean_dev: Tuple[np.ndarray, np.ndarray]
-) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]:
+) -> Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralIoContract]:
     global nb_compose
     nb_compose += 3  # scenario_sequence
 

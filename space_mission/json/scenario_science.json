@@ -1,7 +1,7 @@
 [
   {
     "name": "scenario_science_l2r",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "d1_entry",
@@ -49,7 +49,7 @@
   },
   {
     "name": "scenario_science_r2l",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "d1_entry",

@@ -1,7 +1,7 @@
 [
   {
     "name": "scenario_nav_l2r",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "u1_entry",
@@ -54,7 +54,7 @@
   },
   {
     "name": "scenario_nav_r2l",
-    "type": "PolyhedralContract",
+    "type": "PolyhedralIoContract",
     "data": {
       "input_vars": [
         "u1_entry",

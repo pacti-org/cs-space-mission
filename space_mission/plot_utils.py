@@ -3,8 +3,9 @@ from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from pacti.iocontract import Var
-from pacti.terms.polyhedra import PolyhedralContract, PolyhedralTermList
-from pacti.terms.polyhedra.plots import plot_guarantees
+from pacti.contracts import PolyhedralIoContract
+from pacti.terms.polyhedra import PolyhedralTermList
+from pacti.utils.plots import plot_guarantees
 from typing import Dict, List, Tuple, Union
 from contract_utils import bound
 
@@ -110,7 +111,7 @@ def on_hover(ptl: PolyhedralTermList, x_var: Var, y_var: Var, fig: Figure, ax: A
         fig.canvas.draw_idle()
 
 def plot_guarantees_with_bounds_hover(
-    contract: PolyhedralContract,
+    contract: PolyhedralIoContract,
     x_var: Var,
     y_var: Var,
     var_values: Dict[Var, numeric],

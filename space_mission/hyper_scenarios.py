@@ -1,5 +1,5 @@
 import time
-from pacti.terms.polyhedra import PolyhedralContract
+from pacti.contracts import PolyhedralIoContract
 from pacti_instrumentation.pacti_counters import summarize_instrumentation_data
 import numpy as np
 from contract_utils import *
@@ -56,7 +56,7 @@ if run5:
     dev_sample5: np.ndarray = dev_sampler.random(n=n5)
 
     ta = time.time()
-    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]] = p_umap(generate_5step_scenario, list(zip(scaled_mean_sample5, dev_sample5)))
+    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralIoContract]] = p_umap(generate_5step_scenario, list(zip(scaled_mean_sample5, dev_sample5)))
     tb = time.time()
 
     stats = summarize_instrumentation_data([result[0] for result in results])
@@ -79,7 +79,7 @@ if run20:
     dev_sample20: np.ndarray = dev_sampler.random(n=n20)
 
     ta = time.time()
-    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralContract]] = p_umap(generate_20step_scenario, list(zip(scaled_mean_sample20, dev_sample20)))
+    results: List[Tuple[PactiInstrumentationData, List[tuple2float], PolyhedralIoContract]] = p_umap(generate_20step_scenario, list(zip(scaled_mean_sample20, dev_sample20)))
     tb = time.time()
 
     stats = summarize_instrumentation_data([result[0] for result in results])
