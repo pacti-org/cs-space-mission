@@ -441,7 +441,7 @@ def show_bounds(n: int, c: PolyhedralIoContract, var: str, title: str, text: str
     def compute_bounds(i: int) -> tuple2float:
         return get_numerical_bounds(c=c, var=f"output_{var}{i}")
 
-    last_bounds: tuple2float = get_numerical_bounds(c=c, var=f"{var}{n}_exit")
+    last_bounds: tuple2float = get_numerical_bounds(c=c, var=f"{var}{2*n}_exit")
     middle: List[tuple2float] = p_map(compute_bounds, list(range(1, n)))
     sb: List[tuple2float] = (
         [get_numerical_bounds(c=c, var=f"{var}1_entry")]
@@ -452,7 +452,7 @@ def show_bounds(n: int, c: PolyhedralIoContract, var: str, title: str, text: str
     text = text + f"\n{len(c.inputvars)} input variables\n{len(c.outputvars)} output variables\n{len(c.a.terms)} assumptions\n{len(c.g.terms)} constraints\n{density=:.4g}\nsize distribution:"
     for count in counts:
         text = text + f"\n{count}"
-    text = text + f"\n{n} sequence steps\nbounds({var}{n}_exit)=[{last_bounds[0]:.3g},{last_bounds[1]:.3g}]"
+    text = text + f"\n{n} sequence steps\nbounds({var}{n}_exit)=\n[{last_bounds[0]:.3g},{last_bounds[1]:.3g}]"
     return plot_steps(
         step_bounds=sb,
         step_names=sn,

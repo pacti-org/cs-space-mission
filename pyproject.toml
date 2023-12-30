@@ -9,10 +9,11 @@ authors = [{name = "name", email = "email"}]
 license = "BSD-3-Clause"
 dynamic = ["version"]
 dependencies = [
-    "Pacti @ git+https://github.com/pacti-org/pacti.git@8892ecb",
-    "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@e2d1484",
+    "Pacti-instrumentation @ git+https://github.com/pacti-org/pacti-instrumentation.git@b091cbf",
     "pandas>=2.0.1",
     "ipympl>=0.9.3",
+    "pip>=23.3.2",
+    "ipykernel>=6.28.0",
 ]
 requires-python = ">=3.11,<3.12"
 

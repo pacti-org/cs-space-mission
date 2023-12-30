@@ -166,3 +166,6 @@ no contains_behavior operations
 Pacti PolyhedralCompoundContract statistics:
 no compound_merge operations
 ```
+
+## Virtual Environment
+
